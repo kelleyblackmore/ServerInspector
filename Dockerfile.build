@@ -1,0 +1,25 @@
+# Build container for ServerInspect
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only what's needed for the build
+COPY serverinspect/ /app/serverinspect/
+COPY examples/ /app/examples/
+COPY main.py serverinspect.spec pyproject.toml /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir pyinstaller
+
+# Build the executable
+RUN pyinstaller serverinspect.spec --clean
+
+# The executable will be in /app/dist
+CMD ["echo", "ServerInspect executable built in /app/dist"]

@@ -1,0 +1,141 @@
+name: Build ServerInspect
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+          
+      - name: Run tests
+        run: |
+          pytest
+  
+  build:
+    name: Build Executable
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            exec_name: serverinspect-linux
+            asset_name: serverinspect-linux
+          - os: windows-latest
+            exec_name: serverinspect.exe
+            asset_name: serverinspect-windows.exe
+          - os: macos-latest
+            exec_name: serverinspect-macos
+            asset_name: serverinspect-macos
+            
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+      
+      # Linux-specific setup
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-dev
+      
+      # Build the executable
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller serverinspect.spec --clean
+      
+      # Rename the output file based on OS
+      - name: Rename executable (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mv dist/serverinspect dist/${{ matrix.asset_name }}
+      
+      - name: Rename executable (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mv dist/serverinspect dist/${{ matrix.asset_name }}
+      
+      # Windows doesn't need renaming as it already has .exe extension
+      
+      # Upload the executable as an artifact
+      - name: Upload executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.asset_name }}
+  
+  # Create a release when a tag is pushed
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/serverinspect-linux/serverinspect-linux
+            artifacts/serverinspect-windows.exe/serverinspect-windows.exe
+            artifacts/serverinspect-macos/serverinspect-macos
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## ServerInspect ${{ github.ref_name }}
+            
+            ### Changes
+            - See commit history for changes
+            
+            ### Downloads
+            - [Linux](serverinspect-linux)
+            - [Windows](serverinspect-windows.exe)
+            - [macOS](serverinspect-macos)
+            
+            ### Installation
+            Download the appropriate executable for your platform and run it directly.
+            
+            ```
+            # Example usage
+            ./serverinspect-linux --help
+            ```
