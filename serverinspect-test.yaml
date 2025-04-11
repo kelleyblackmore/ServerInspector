@@ -1,0 +1,33 @@
+---
+# ServerInspect Test Configuration
+
+# General information
+title: Basic Server Test
+description: Tests basic server functionality and configuration
+author: ServerInspect User
+
+# Test definitions
+tests:
+  - name: Check if nginx is installed
+    type: package
+    package: nginx
+    installed: true
+    
+  - name: Check if nginx service is running
+    type: service
+    service: nginx
+    running: true
+    enabled: true
+    
+  - name: Check if web directory exists
+    type: file
+    path: /var/www/html
+    exists: true
+    type: directory
+    
+  - name: Check nginx configuration syntax
+    type: command
+    command: nginx -t
+    exit_status: 0
+    stdout:
+      contains: "syntax is ok"
