@@ -47,5 +47,6 @@ packages = [
     "serverinspect.templates",
     "serverinspect.runners",
     "serverinspect.formatters",
-    "serverinspect.collectors"
+    "serverinspect.collectors",
+    "attached_assets"
 ]

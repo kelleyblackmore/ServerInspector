@@ -72,4 +72,9 @@ Thumbs.db
 
 # Build artifacts
 *.lock
-uv.lock 
+uv.lock
+
+# Keep attached_assets directory
+!src/attached_assets/
+!src/attached_assets/__init__.py
+!src/attached_assets/README.md 
