@@ -4,8 +4,10 @@ Port checker module for ServerInspect.
 This module provides simple functions to check port-related aspects of a system.
 """
 
-import subprocess
 import logging
+import subprocess
+import re
+import socket
 
 logger = logging.getLogger("serverinspect")
 
@@ -17,9 +19,9 @@ def check(params):
     Args:
         params (dict): Check parameters, including:
             - port: Port number to check
+            - protocol: Protocol to check (tcp or udp, default: tcp)
             - listening: Whether the port should be listening
-            - protocol: Protocol to check (tcp, udp)
-            - process: Process name that should be using the port
+            - address: Specific address to check (default: any)
 
     Returns:
         dict: Check result with success/failure and details
@@ -31,112 +33,222 @@ def check(params):
         result["message"] = "Missing required parameter: port"
         return result
 
-    port = params["port"]
+    # Get port number and validate it
+    try:
+        port = int(params["port"])
+        if port < 1 or port > 65535:
+            result["message"] = f"Invalid port number: {port}"
+            return result
+    except ValueError:
+        result["message"] = f"Invalid port number: {params['port']}"
+        return result
+
     result["details"]["port"] = port
 
-    # Default protocol is tcp
-    protocol = params.get("protocol", "tcp")
+    # Get protocol
+    protocol = params.get("protocol", "tcp").lower()
+    if protocol not in ["tcp", "udp"]:
+        result["message"] = f"Invalid protocol: {protocol}"
+        return result
+    
     result["details"]["protocol"] = protocol
 
-    # Check if port is listening
-    try:
-        # Use ss or netstat to check for listening ports
-        if (
-            subprocess.run(
-                ["which", "ss"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            ).returncode
-            == 0
-        ):
-            # ss is available
-            proto_flag = "t" if protocol.lower() == "tcp" else "u"
-            cmd = ["ss", f"-ln{proto_flag}", "state", "listening"]
-            proc = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
-            port_listening = f":{port}" in proc.stdout
-        else:
-            # Fall back to netstat
-            proto_flag = "--tcp" if protocol.lower() == "tcp" else "--udp"
-            cmd = ["netstat", "-ln", proto_flag]
-            proc = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
-            port_listening = f":{port}" in proc.stdout
+    # Get specific address if provided
+    address = params.get("address", "any")
+    result["details"]["address"] = address
 
-        result["details"]["listening"] = port_listening
+    # Check if the port is listening
+    port_info = _check_port(port, protocol, address)
+    result["details"].update(port_info)
 
-        # Check listening state if required
-        if "listening" in params:
-            expected_listening = params["listening"]
-            result["details"]["expected_listening"] = expected_listening
+    # Check listening status if required
+    if "listening" in params:
+        expected_listening = params["listening"]
+        result["details"]["expected_listening"] = expected_listening
 
-            if port_listening == expected_listening:
-                result["success"] = True
-                if expected_listening:
-                    result["message"] = (
-                        f"Port {port}/{protocol} is listening as expected"
-                    )
-                else:
-                    result["message"] = (
-                        f"Port {port}/{protocol} is not listening as expected"
-                    )
+        if port_info["listening"] != expected_listening:
+            if expected_listening:
+                result["message"] = f"Port {port}/{protocol} is not listening"
             else:
-                if expected_listening:
-                    result["message"] = f"Port {port}/{protocol} is not listening"
-                else:
-                    result["message"] = (
-                        f"Port {port}/{protocol} is listening but should not be"
-                    )
-                return result
-        else:
-            # If we're not checking listening status, just report it
-            result["success"] = True
-            result["message"] = (
-                f"Port {port}/{protocol} listening status is {port_listening}"
-            )
+                result["message"] = f"Port {port}/{protocol} is listening but should not be"
+            return result
 
-        # Check process using the port
-        if "process" in params and port_listening:
-            expected_process = params["process"]
-            result["details"]["expected_process"] = expected_process
-
-            # Use lsof to check which process has the port open
-            try:
-                # Check if lsof is available
-                if (
-                    subprocess.run(
-                        ["which", "lsof"],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                    ).returncode
-                    == 0
-                ):
-                    cmd = ["lsof", f"-i{protocol}:{port}", "-sTCP:LISTEN"]
-                    proc = subprocess.run(
-                        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-                    )
-                    process_output = proc.stdout
-
-                    # Check if expected process is using the port
-                    if expected_process in process_output:
-                        result["details"]["process_match"] = True
-                    else:
-                        result["success"] = False
-                        result["message"] = (
-                            f"Port {port}/{protocol} is not being used by '{expected_process}'"
-                        )
-                        result["details"]["process_match"] = False
-                        result["details"]["actual_process"] = process_output.strip()
-                else:
-                    # lsof not available, skip this check
-                    logger.warning("lsof not available, skipping process check")
-                    result["details"]["process_check_skipped"] = True
-            except Exception as e:
-                logger.warning(f"Error checking process for port {port}: {str(e)}")
-                result["details"]["process_check_error"] = str(e)
-
-    except Exception as e:
-        result["message"] = f"Error checking port {port}: {str(e)}"
-        result["details"]["error"] = str(e)
+    # All checks passed
+    result["success"] = True
+    if port_info["listening"]:
+        result["message"] = f"Port {port}/{protocol} is listening as expected"
+    else:
+        result["message"] = f"Port {port}/{protocol} is not listening as expected"
 
     return result
+
+
+def run(runner, test_config):
+    """
+    Run a port test (legacy API for backward compatibility).
+
+    Args:
+        runner: A runner instance
+        test_config (dict): Test configuration
+
+    Returns:
+        dict: Test result in the old format
+    """
+    # Convert parameters to the new format
+    params = {}
+    
+    # Handle port parameter
+    if "port" in test_config:
+        params["port"] = test_config["port"]
+    
+    # Copy other parameters
+    if "protocol" in test_config:
+        params["protocol"] = test_config["protocol"]
+    if "listening" in test_config:
+        params["listening"] = test_config["listening"]
+    if "address" in test_config:
+        params["address"] = test_config["address"]
+    
+    # Run the check
+    result = check(params)
+    
+    # Convert the result back to the old format
+    old_result = {
+        "name": test_config.get("name", "Unnamed port test"),
+        "type": "port",
+        "result": result["success"],
+        "details": result["details"]
+    }
+    
+    # Add error message if check failed
+    if not result["success"]:
+        old_result["details"]["error"] = result["message"]
+    
+    return old_result
+
+
+def _check_port(port, protocol="tcp", address="any"):
+    """
+    Check if a port is listening.
+
+    Args:
+        port (int): Port number
+        protocol (str): Protocol (tcp or udp)
+        address (str): Specific address to check
+
+    Returns:
+        dict: Port information
+    """
+    port_info = {
+        "listening": False,
+        "processes": [],
+    }
+
+    try:
+        # Try to use ss command (modern socket statistics)
+        if _command_exists("ss"):
+            cmd = ["ss", "-l", "-n"]
+            if protocol == "tcp":
+                cmd.append("-t")
+            elif protocol == "udp":
+                cmd.append("-u")
+
+            process = subprocess.run(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+
+            if process.returncode == 0:
+                for line in process.stdout.splitlines():
+                    # Look for the port in the output
+                    pattern = fr":{port}\b"
+                    if re.search(pattern, line):
+                        if address == "any" or address in line:
+                            port_info["listening"] = True
+                            port_info["command_output"] = line.strip()
+                            break
+
+        # Fallback to netstat if ss is not available
+        elif _command_exists("netstat"):
+            cmd = ["netstat", "-l", "-n"]
+            if protocol == "tcp":
+                cmd.append("-t")
+            elif protocol == "udp":
+                cmd.append("-u")
+
+            process = subprocess.run(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+
+            if process.returncode == 0:
+                for line in process.stdout.splitlines():
+                    # Look for the port in the output
+                    pattern = fr":{port}\b"
+                    if re.search(pattern, line):
+                        if address == "any" or address in line:
+                            port_info["listening"] = True
+                            port_info["command_output"] = line.strip()
+                            break
+
+        # If neither ss nor netstat worked, try a direct socket connection for TCP
+        elif protocol == "tcp":
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex(("localhost", port))
+            sock.close()
+            port_info["listening"] = result == 0
+
+        # Get the process using the port if it's listening
+        if port_info["listening"] and (_command_exists("lsof") or _command_exists("fuser")):
+            if _command_exists("lsof"):
+                cmd = ["lsof", f"-i:{port}"]
+                process = subprocess.run(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                )
+                if process.returncode == 0:
+                    # Get process info from lsof output
+                    lines = process.stdout.strip().split("\n")[1:]  # Skip header
+                    for line in lines:
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            port_info["processes"].append({
+                                "name": parts[0],
+                                "pid": parts[1],
+                            })
+            elif _command_exists("fuser"):
+                cmd = ["fuser", f"{port}/{protocol}"]
+                process = subprocess.run(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                )
+                if process.returncode == 0:
+                    # Get process PIDs from fuser output
+                    pids = process.stdout.strip().split()
+                    for pid in pids:
+                        if pid.isdigit():
+                            try:
+                                # Get process name from /proc
+                                with open(f"/proc/{pid}/comm", "r") as f:
+                                    name = f.read().strip()
+                                    port_info["processes"].append({
+                                        "name": name,
+                                        "pid": pid,
+                                    })
+                            except Exception:
+                                port_info["processes"].append({"pid": pid})
+
+    except Exception as e:
+        logger.error(f"Error checking port {port}/{protocol}: {str(e)}")
+
+    return port_info
+
+
+def _command_exists(command):
+    """Check if a command exists on the system."""
+    try:
+        subprocess.run(
+            ["which", command], 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE
+        )
+        return True
+    except Exception:
+        return False

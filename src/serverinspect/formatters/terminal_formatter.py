@@ -79,6 +79,8 @@ class TerminalFormatter(BaseFormatter):
                 "disk_usage",
                 "disk_detailed",
                 "memory_detailed",
+                "network",
+                "network_detailed",
                 "error",
             ] and not isinstance(value, dict):
                 table.add_row(key, str(value))
@@ -106,10 +108,68 @@ class TerminalFormatter(BaseFormatter):
             self.console.print(memory_panel)
             self.console.print()
 
+        # Network Information
+        if "network" in system_info:
+            self._print_network_info(system_info["network"])
+            self.console.print()
+            
         # Disk Usage
         if "disk_usage" in system_info:
             self._print_disk_usage(system_info["disk_usage"])
             self.console.print()
+
+    def _print_network_info(self, network_info):
+        """Print network information."""
+        network_panel = Panel(
+            self._create_network_info_tree(network_info),
+            title="Network Information",
+            border_style="magenta",
+        )
+        self.console.print(network_panel)
+        
+        # If interfaces are available, display a table with interface details
+        if "interfaces" in network_info and network_info["interfaces"]:
+            table = Table(title="Network Interfaces", box=box.SIMPLE)
+            table.add_column("Interface", style="cyan")
+            table.add_column("IP Address")
+            table.add_column("CIDR/Netmask")
+            
+            for interface in network_info["interfaces"]:
+                iface_name = interface.get("interface", "unknown")
+                ip_address = interface.get("ip_address", "")
+                cidr = interface.get("cidr", interface.get("netmask", ""))
+                table.add_row(iface_name, ip_address, cidr)
+            
+            self.console.print(table)
+
+    def _create_network_info_tree(self, network_info):
+        """Create a tree for network information."""
+        tree = Tree("Network")
+        
+        # Add hostname
+        if "hostname" in network_info:
+            tree.add(f"Hostname: [bold]{network_info['hostname']}[/bold]")
+        
+        # Add default gateway
+        if "default_gateway" in network_info:
+            tree.add(f"Default Gateway: [bold]{network_info['default_gateway']}[/bold]")
+            
+        # Add DNS servers
+        if "dns_servers" in network_info:
+            dns_tree = tree.add("DNS Servers")
+            for server in network_info["dns_servers"]:
+                dns_tree.add(f"[bold]{server}[/bold]")
+        
+        # Add internet connectivity
+        if "internet_connectivity" in network_info:
+            status = "[green]Connected[/green]" if network_info["internet_connectivity"] else "[red]Disconnected[/red]"
+            tree.add(f"Internet: {status}")
+            
+        # Add connection count if available
+        if "connection_count" in network_info:
+            tree.add(f"Active Connections: [bold]{network_info['connection_count']}[/bold]")
+            
+        return tree
 
     def _create_cpu_info_tree(self, cpu_info):
         """Create a tree for CPU information."""

@@ -290,7 +290,7 @@ def check(check_type, target, **options):
         # Get the appropriate checker and run it
         try:
             checker = get_checker(check_type)
-            result = checker(params)
+            result = checker.check(params)
 
             # Display the result
             if result["success"]:

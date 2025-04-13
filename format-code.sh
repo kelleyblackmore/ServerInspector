@@ -5,15 +5,19 @@
 
 set -e
 
-echo "🔍 Formatting Python code with Black..."
+echo "🔍 Formatting Python code..."
 
-# Check if Black is installed
-if ! command -v black &> /dev/null; then
-    echo "Installing Black code formatter..."
-    pipx install black
+# Check if formatters are installed
+if ! command -v black &> /dev/null || ! command -v isort &> /dev/null; then
+    echo "Installing code formatters..."
+    pip install black isort
 fi
 
-# Run Black on the code
+# Format the code
+echo "Running Black formatter..."
 black .
+
+echo "Running isort formatter..."
+isort --profile black .
 
 echo "✅ Code formatting complete!" 

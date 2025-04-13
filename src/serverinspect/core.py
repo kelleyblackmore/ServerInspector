@@ -11,7 +11,7 @@ from datetime import datetime
 from serverinspect.runners import get_runner
 from serverinspect.collectors.system_info import collect_system_info
 from serverinspect.formatters import get_formatter
-from serverinspect.test_types import get_test_handler
+from serverinspect.checkers import get_checker
 
 logger = logging.getLogger("serverinspect")
 
@@ -91,10 +91,10 @@ class ServerInspect:
 
                 # Get the appropriate test handler
                 test_type = test_config["type"]
-                test_handler = get_test_handler(test_type)
+                checker_module = get_checker(test_type)
 
                 # Run the test
-                test_result = test_handler.run(self.runner, test_config)
+                test_result = checker_module.run(self.runner, test_config)
 
                 # Update summary
                 if test_result["result"]:
