@@ -1,0 +1,52 @@
+---
+# ServerInspect Test Configuration
+
+# General information
+title: Basic Server Test
+description: Tests basic server functionality and configuration
+author: ServerInspect User
+
+# Test definitions
+tests:
+  - name: Check if /etc/hosts exists
+    type: file
+    path: /etc/hosts
+    exists: true
+    
+  - name: Check if /etc/passwd has correct permissions
+    type: file
+    path: /etc/passwd
+    exists: true
+    permissions: "644"
+    
+  - name: Check if sshd service is running
+    type: service
+    service: sshd
+    running: true
+    enabled: true
+    
+  - name: Check if sshd process is running
+    type: process
+    process: sshd
+    running: true
+    count: 1
+    
+  - name: Check if date command works
+    type: command
+    command: date
+    exit_status: 0
+    
+  - name: Check if kernel is recent
+    type: command
+    command: uname -r
+    exit_status: 0
+    stdout:
+      # This might need to be adjusted for your environment
+      contains: "5."
+      
+  - name: Check if root user exists
+    type: command
+    command: id root
+    exit_status: 0
+    stdout:
+      contains: "uid=0"

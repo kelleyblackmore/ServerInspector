@@ -1,0 +1,95 @@
+stages:
+  - lint
+  - test
+  - build
+  - release
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+# Cache pip dependencies between jobs
+cache:
+  paths:
+    - .pip-cache/
+
+# Lint stage
+lint:
+  stage: lint
+  image: python:3.11
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e ".[dev]"
+    - pip install flake8 black isort pylint
+    - black --check .
+    - isort --check-only --profile black .
+    - flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+    - pylint --disable=all --enable=unused-import,unused-variable,unused-argument,undefined-variable src/
+
+# Unit tests
+test:
+  stage: test
+  image: python:3.11
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e ".[test]"
+    - pytest --cov=src --cov-report=xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+# Integration tests
+integration:
+  stage: test
+  image: python:3.11
+  services:
+    - nginx:latest
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e ".[test]"
+    - apt-get update && apt-get install -y nginx
+    - pytest tests/integration/ -v
+
+# Build for each platform
+.build_template: &build_def
+  stage: build
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e .
+    - pip install pyinstaller
+    - pyinstaller serverinspect.spec --clean
+    - mkdir -p dist/output
+    - cp dist/serverinspect dist/output/${BINARY_NAME}
+    - cp dist/serverinspect dist/output/${SI_NAME}
+  artifacts:
+    paths:
+      - dist/output/
+
+# Linux build
+build:linux:
+  <<: *build_def
+  image: python:3.11
+  variables:
+    BINARY_NAME: serverinspect-linux
+    SI_NAME: si-linux
+
+# Only run release job for main branch
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
+  script:
+    - echo "Creating release..."
+  release:
+    name: 'Release $CI_COMMIT_SHORT_SHA'
+    description: 'Release created from commit $CI_COMMIT_SHA'
+    tag_name: 'v-$CI_COMMIT_SHORT_SHA'
+    assets:
+      links:
+        - name: 'Linux Binary'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/serverinspect-linux?job=build:linux'
+        - name: 'Linux Binary (Short name)'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/si-linux?job=build:linux' 

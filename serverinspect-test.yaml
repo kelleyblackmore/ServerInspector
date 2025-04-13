@@ -1,33 +1,37 @@
----
 # ServerInspect Test Configuration
+# Simple configuration that works with both old and new approaches
 
-# General information
-title: Basic Server Test
-description: Tests basic server functionality and configuration
-author: ServerInspect User
+name: "Simple Test Configuration"
+description: "Basic test configuration that works with any system"
 
-# Test definitions
-tests:
-  - name: Check if nginx is installed
-    type: package
-    package: nginx
-    installed: true
-    
-  - name: Check if nginx service is running
-    type: service
-    service: nginx
-    running: true
-    enabled: true
-    
-  - name: Check if web directory exists
-    type: file
-    path: /var/www/html
+# Simple checks
+checks:
+  - name: "Check for /etc directory"
+    type: "file"
+    path: "/etc"
     exists: true
-    type: directory
     
-  - name: Check nginx configuration syntax
-    type: command
-    command: nginx -t
-    exit_status: 0
-    stdout:
-      contains: "syntax is ok"
+  - name: "Echo command test"
+    type: "command"
+    command: "echo Hello World"
+    exit_code: 0
+    stdout_contains: "Hello World"
+
+# Legacy tests format (for backward compatibility)
+tests:
+  - name: "Check if /etc directory exists"
+    type: "file"
+    path: "/etc"
+    exists: true
+    
+  - name: "Check system command output"
+    type: "command"
+    command: "echo Hello World"
+    exit_code: 0
+    stdout_contains: "Hello World"
+
+# Output configuration
+output:
+  format: "text"
+  detail_level: "normal"
+  save_to_file: false

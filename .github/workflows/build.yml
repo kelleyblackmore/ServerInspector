@@ -1,38 +1,15 @@
-name: Build ServerInspect
+name: Build and Release
 
 on:
   push:
     branches: [ main, master ]
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:  # Allow manual triggers
 
 jobs:
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[test]"
-          
-      - name: Run tests
-        run: |
-          pytest
-  
   build:
     name: Build Executable
-    needs: test
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -42,12 +19,15 @@ jobs:
           - os: ubuntu-latest
             exec_name: serverinspect-linux
             asset_name: serverinspect-linux
+            si_name: si-linux
           - os: windows-latest
             exec_name: serverinspect.exe
             asset_name: serverinspect-windows.exe
+            si_name: si-windows.exe
           - os: macos-latest
             exec_name: serverinspect-macos
             asset_name: serverinspect-macos
+            si_name: si-macos
             
     steps:
       - uses: actions/checkout@v3
@@ -80,26 +60,38 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           mv dist/serverinspect dist/${{ matrix.asset_name }}
+          cp dist/${{ matrix.asset_name }} dist/${{ matrix.si_name }}
       
       - name: Rename executable (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           mv dist/serverinspect dist/${{ matrix.asset_name }}
+          cp dist/${{ matrix.asset_name }} dist/${{ matrix.si_name }}
       
-      # Windows doesn't need renaming as it already has .exe extension
+      - name: Rename executable (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cp dist/serverinspect.exe dist/${{ matrix.si_name }}
       
       # Upload the executable as an artifact
-      - name: Upload executable
+      - name: Upload executable (full name)
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.asset_name }}
           path: dist/${{ matrix.asset_name }}
+
+      # Upload the executable with short name as an artifact
+      - name: Upload executable (short name)
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.si_name }}
+          path: dist/${{ matrix.si_name }}
   
-  # Create a release when a tag is pushed
+  # Create a release when a tag is pushed or on main/master branch
   release:
     name: Create Release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -110,8 +102,10 @@ jobs:
         with:
           path: artifacts
       
-      - name: Create Release
-        id: create_release
+      # If this is a tag release
+      - name: Create Tag Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: create_tag_release
         uses: softprops/action-gh-release@v1
         with:
           draft: false
@@ -120,6 +114,9 @@ jobs:
             artifacts/serverinspect-linux/serverinspect-linux
             artifacts/serverinspect-windows.exe/serverinspect-windows.exe
             artifacts/serverinspect-macos/serverinspect-macos
+            artifacts/si-linux/si-linux
+            artifacts/si-windows.exe/si-windows.exe
+            artifacts/si-macos/si-macos
           name: Release ${{ github.ref_name }}
           body: |
             ## ServerInspect ${{ github.ref_name }}
@@ -128,14 +125,34 @@ jobs:
             - See commit history for changes
             
             ### Downloads
+            #### Full Name:
             - [Linux](serverinspect-linux)
             - [Windows](serverinspect-windows.exe)
             - [macOS](serverinspect-macos)
             
-            ### Installation
-            Download the appropriate executable for your platform and run it directly.
+            #### Short Name (si):
+            - [Linux](si-linux)
+            - [Windows](si-windows.exe)
+            - [macOS](si-macos)
             
+            ### Quick Install
+            ```bash
+            curl -sSL https://raw.githubusercontent.com/yourusername/ServerInspector/main/install.sh | bash
             ```
-            # Example usage
-            ./serverinspect-linux --help
-            ```
+
+      # If this is a main/master branch push (not a tag)
+      - name: Create Latest Release
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          gh release delete latest --yes || true
+          gh release create latest \
+            --title "Latest Build" \
+            --notes "This is the latest build from the main branch. It may not be stable." \
+            artifacts/serverinspect-linux/serverinspect-linux \
+            artifacts/serverinspect-windows.exe/serverinspect-windows.exe \
+            artifacts/serverinspect-macos/serverinspect-macos \
+            artifacts/si-linux/si-linux \
+            artifacts/si-windows.exe/si-windows.exe \
+            artifacts/si-macos/si-macos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

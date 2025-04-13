@@ -1,25 +1,50 @@
-# Build container for ServerInspect
-FROM python:3.11-slim
+# Use Python 3.9 as base image
+FROM python:3.9-slim
 
-WORKDIR /app
-
-# Install build dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     build-essential \
+    python3-dev \
+    libssl-dev \
+    libffi-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    wget \
+    curl \
+    llvm \
+    libncurses5-dev \
+    xz-utils \
+    tk-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    liblzma-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only what's needed for the build
-COPY serverinspect/ /app/serverinspect/
+# Set working directory
+WORKDIR /app
+
+# Install core dependencies with all needed packages for creating standalone executables
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    click \
+    rich \
+    pyyaml \
+    jinja2 \
+    paramiko \
+    psutil \
+    pyinstaller
+
+# Copy project files
+COPY src/ /app/src/
 COPY examples/ /app/examples/
-COPY main.py serverinspect.spec pyproject.toml /app/
+COPY build_executable.py /app/
+COPY requirements.txt* /app/
+COPY pyproject.toml /app/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -e .
-RUN pip install --no-cache-dir pyinstaller
+# Make the build script executable
+RUN chmod +x build_executable.py
 
-# Build the executable
-RUN pyinstaller serverinspect.spec --clean
-
-# The executable will be in /app/dist
-CMD ["echo", "ServerInspect executable built in /app/dist"]
+# Set the default command
+ENTRYPOINT ["python", "build_executable.py"]

@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     {name = "ServerInspect Team"}
 ]
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.10"
 dependencies = [
     "click>=8.1.0",
@@ -32,7 +32,21 @@ test = [
 
 [project.scripts]
 serverinspect = "serverinspect.cli:cli"
+si = "serverinspect.cli:cli"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = [
+    "serverinspect", 
+    "serverinspect.test_types",
+    "serverinspect.checkers",
+    "serverinspect.templates",
+    "serverinspect.runners",
+    "serverinspect.formatters",
+    "serverinspect.collectors",
+    "attached_assets"
+]

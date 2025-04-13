@@ -1,0 +1,1571 @@
+timestamp: '2025-04-12T15:49:58.091409'
+host: localhost
+summary:
+  total: 20
+  passed: 4
+  failed: 16
+tests:
+- name: Check if application directory exists
+  type: directory
+  result: false
+  error: 'Unsupported test type: directory'
+- name: Check if configuration file exists and contains valid JSON
+  type: file
+  result: false
+  details:
+    path: '{{ config_path }}'
+    exists: false
+    expected: File should exist
+    actual: File does not exist
+- name: Check if log directory is empty
+  type: directory
+  result: false
+  error: 'Unsupported test type: directory'
+- name: Check symlink to configuration
+  type: symlink
+  result: false
+  error: 'Unsupported test type: symlink'
+- name: Check web server version
+  type: command
+  result: true
+  details:
+    command: '{{ web_service }} -v'
+    exit_status: 127
+    stdout: ''
+    stderr: '/bin/sh: 1: {{: Permission denied
+
+      '
+- name: Check database connection
+  type: command
+  result: true
+  details:
+    command: psql -U postgres -c 'SELECT version()'
+    exit_status: 127
+    stdout: ''
+    stderr: '/bin/sh: 1: psql: Permission denied
+
+      '
+- name: Check disk space
+  type: command
+  result: true
+  details:
+    command: df -h /
+    exit_status: 0
+    stdout: 'Filesystem      Size  Used Avail Use% Mounted on
+
+      /dev/sdc       1007G  9.1G  947G   1% /
+
+      '
+    stderr: ''
+- name: Check JSON output parsing
+  type: command
+  result: true
+  details:
+    command: curl -s http://localhost:{{ web_port }}/api/status
+    exit_status: 3
+    stdout: ''
+    stderr: ''
+- name: Check if web server is running
+  type: service
+  result: false
+  details:
+    service: '{{ web_service }}'
+    exists: false
+    running: false
+    enabled: false
+    error: Service '{{ web_service }}' does not exist
+- name: Check if database service is running
+  type: service
+  result: false
+  details:
+    service: '{{ db_service }}'
+    exists: false
+    running: false
+    enabled: false
+    error: Service '{{ db_service }}' does not exist
+- name: Check if firewall is active
+  type: service
+  result: false
+  details:
+    service: ufw
+    exists: false
+    running: false
+    enabled: false
+    error: Service 'ufw' does not exist
+- name: Check web server process
+  type: process
+  result: false
+  details: {}
+  error: Process test requires 'process' parameter
+- name: Check database process
+  type: process
+  result: false
+  details: {}
+  error: Process test requires 'process' parameter
+- name: Check no developer tools running in production
+  type: process
+  result: false
+  details: {}
+  error: Process test requires 'process' parameter
+- name: Check web server package
+  type: package
+  result: false
+  details:
+    package: '{{ web_service }}'
+    installed: false
+    version: null
+    error: Package '{{ web_service }}' is not installed
+    expected_installed: true
+- name: Check database package
+  type: package
+  result: false
+  details:
+    package: postgresql
+    installed: false
+    version: null
+    error: Package 'postgresql' is not installed
+    expected_installed: true
+- name: Check development packages not installed
+  type: package
+  result: false
+  details:
+    package: build-essential
+    installed: true
+    version: 12.10ubuntu1
+    error: Package 'build-essential' is installed but should not be
+    expected_installed: false
+- name: Check web server port
+  type: port
+  result: false
+  error: 'Unsupported test type: port'
+- name: Check database port
+  type: port
+  result: false
+  error: 'Unsupported test type: port'
+- name: Check no telnet port
+  type: port
+  result: false
+  error: 'Unsupported test type: port'
+title: Comprehensive Server Test
+description: Tests all available features of ServerInspect
+system_info:
+  hostname: DESKTOP-FU6ASJ2
+  uname: 'Linux DESKTOP-FU6ASJ2 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov
+    5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux'
+  os_release:
+    PRETTY_NAME: Ubuntu 24.04.2 LTS
+    NAME: Ubuntu
+    VERSION_ID: '24.04'
+    VERSION: 24.04.2 LTS (Noble Numbat)
+    VERSION_CODENAME: noble
+    ID: ubuntu
+    ID_LIKE: debian
+    HOME_URL: https://www.ubuntu.com/
+    SUPPORT_URL: https://help.ubuntu.com/
+    BUG_REPORT_URL: https://bugs.launchpad.net/ubuntu/
+    PRIVACY_POLICY_URL: https://www.ubuntu.com/legal/terms-and-policies/privacy-policy
+    UBUNTU_CODENAME: noble
+    LOGO: ubuntu-logo
+  cpu:
+    processor_0:
+      processor: '0'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '0'
+      cpu cores: '16'
+      apicid: '0'
+      initial apicid: '0'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_1:
+      processor: '1'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '0'
+      cpu cores: '16'
+      apicid: '1'
+      initial apicid: '1'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_2:
+      processor: '2'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '1'
+      cpu cores: '16'
+      apicid: '2'
+      initial apicid: '2'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_3:
+      processor: '3'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '1'
+      cpu cores: '16'
+      apicid: '3'
+      initial apicid: '3'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_4:
+      processor: '4'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '2'
+      cpu cores: '16'
+      apicid: '4'
+      initial apicid: '4'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_5:
+      processor: '5'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '2'
+      cpu cores: '16'
+      apicid: '5'
+      initial apicid: '5'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_6:
+      processor: '6'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '3'
+      cpu cores: '16'
+      apicid: '6'
+      initial apicid: '6'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_7:
+      processor: '7'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '3'
+      cpu cores: '16'
+      apicid: '7'
+      initial apicid: '7'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_8:
+      processor: '8'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '4'
+      cpu cores: '16'
+      apicid: '8'
+      initial apicid: '8'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_9:
+      processor: '9'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '4'
+      cpu cores: '16'
+      apicid: '9'
+      initial apicid: '9'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_10:
+      processor: '10'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '5'
+      cpu cores: '16'
+      apicid: '10'
+      initial apicid: '10'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_11:
+      processor: '11'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '5'
+      cpu cores: '16'
+      apicid: '11'
+      initial apicid: '11'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_12:
+      processor: '12'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '6'
+      cpu cores: '16'
+      apicid: '12'
+      initial apicid: '12'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_13:
+      processor: '13'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '6'
+      cpu cores: '16'
+      apicid: '13'
+      initial apicid: '13'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_14:
+      processor: '14'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '7'
+      cpu cores: '16'
+      apicid: '14'
+      initial apicid: '14'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_15:
+      processor: '15'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '7'
+      cpu cores: '16'
+      apicid: '15'
+      initial apicid: '15'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_16:
+      processor: '16'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '8'
+      cpu cores: '16'
+      apicid: '16'
+      initial apicid: '16'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_17:
+      processor: '17'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '8'
+      cpu cores: '16'
+      apicid: '17'
+      initial apicid: '17'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_18:
+      processor: '18'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '9'
+      cpu cores: '16'
+      apicid: '18'
+      initial apicid: '18'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_19:
+      processor: '19'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '9'
+      cpu cores: '16'
+      apicid: '19'
+      initial apicid: '19'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_20:
+      processor: '20'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '10'
+      cpu cores: '16'
+      apicid: '20'
+      initial apicid: '20'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_21:
+      processor: '21'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '10'
+      cpu cores: '16'
+      apicid: '21'
+      initial apicid: '21'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_22:
+      processor: '22'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '11'
+      cpu cores: '16'
+      apicid: '22'
+      initial apicid: '22'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_23:
+      processor: '23'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '11'
+      cpu cores: '16'
+      apicid: '23'
+      initial apicid: '23'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_24:
+      processor: '24'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '12'
+      cpu cores: '16'
+      apicid: '24'
+      initial apicid: '24'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_25:
+      processor: '25'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '12'
+      cpu cores: '16'
+      apicid: '25'
+      initial apicid: '25'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_26:
+      processor: '26'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '13'
+      cpu cores: '16'
+      apicid: '26'
+      initial apicid: '26'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_27:
+      processor: '27'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '13'
+      cpu cores: '16'
+      apicid: '27'
+      initial apicid: '27'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_28:
+      processor: '28'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '14'
+      cpu cores: '16'
+      apicid: '28'
+      initial apicid: '28'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_29:
+      processor: '29'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '14'
+      cpu cores: '16'
+      apicid: '29'
+      initial apicid: '29'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_30:
+      processor: '30'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '15'
+      cpu cores: '16'
+      apicid: '30'
+      initial apicid: '30'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_31:
+      processor: '31'
+      vendor_id: GenuineIntel
+      cpu family: '6'
+      model: '183'
+      model name: 13th Gen Intel(R) Core(TM) i9-13900K
+      stepping: '1'
+      microcode: '0xffffffff'
+      cpu MHz: '2995.196'
+      cache size: 36864 KB
+      physical id: '0'
+      siblings: '32'
+      core id: '15'
+      cpu cores: '16'
+      apicid: '31'
+      initial apicid: '31'
+      fpu: 'yes'
+      fpu_exception: 'yes'
+      cpuid level: '28'
+      wp: 'yes'
+      flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+        clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc
+        rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid pni pclmulqdq vmx ssse3
+        fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave
+        avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs
+        ibpb stibp ibrs_enhanced tpr_shadow vnmi ept vpid ept_ad fsgsbase tsc_adjust
+        bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt
+        xsavec xgetbv1 xsaves avx_vnni umip waitpkg gfni vaes vpclmulqdq rdpid movdiri
+        movdir64b fsrm md_clear serialize flush_l1d arch_capabilities
+      vmx flags: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest
+        ept_mode_based_exec tsc_scaling usr_wait_pause
+      bugs: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds
+        bhi
+      bogomips: '5990.39'
+      clflush size: '64'
+      cache_alignment: '64'
+      address sizes: 46 bits physical, 48 bits virtual
+      power management: ''
+    processor_count: 32
+    model_name: 13th Gen Intel(R) Core(TM) i9-13900K
+    vendor_id: GenuineIntel
+  memory:
+    MemTotal: 2012752 kB (1965.58 MB)
+    MemFree: 72228 kB (70.54 MB)
+    MemAvailable: 525448 kB (513.13 MB)
+    Buffers: 94432 kB (92.22 MB)
+    Cached: 444980 kB (434.55 MB)
+    SwapCached: 84920 kB (82.93 MB)
+    Active: 321112 kB (313.59 MB)
+    Inactive: 1026040 kB (1001.99 MB)
+    Active(anon): 79908 kB (78.04 MB)
+    Inactive(anon): 730212 kB (713.10 MB)
+    Active(file): 241204 kB (235.55 MB)
+    Inactive(file): 295828 kB (288.89 MB)
+    Unevictable: 0 kB (0.00 MB)
+    Mlocked: 0 kB (0.00 MB)
+    SwapTotal: 1048576 kB (1024.00 MB)
+    SwapFree: 689464 kB (673.30 MB)
+    Dirty: 264 kB (0.26 MB)
+    Writeback: 0 kB (0.00 MB)
+    AnonPages: 755524 kB (737.82 MB)
+    Mapped: 123164 kB (120.28 MB)
+    Shmem: 2364 kB (2.31 MB)
+    KReclaimable: 95696 kB (93.45 MB)
+    Slab: 214136 kB (209.12 MB)
+    SReclaimable: 95696 kB (93.45 MB)
+    SUnreclaim: 118440 kB (115.66 MB)
+    KernelStack: 10752 kB (10.50 MB)
+    PageTables: 23420 kB (22.87 MB)
+    NFS_Unstable: 0 kB (0.00 MB)
+    Bounce: 0 kB (0.00 MB)
+    WritebackTmp: 0 kB (0.00 MB)
+    CommitLimit: 2054952 kB (2006.79 MB)
+    Committed_AS: 2633972 kB (2572.24 MB)
+    VmallocTotal: 34359738367 kB (33554432.00 MB)
+    VmallocUsed: 33452 kB (32.67 MB)
+    VmallocChunk: 0 kB (0.00 MB)
+    Percpu: 14208 kB (13.88 MB)
+    AnonHugePages: 161792 kB (158.00 MB)
+    ShmemHugePages: 0 kB (0.00 MB)
+    ShmemPmdMapped: 0 kB (0.00 MB)
+    FileHugePages: 0 kB (0.00 MB)
+    FilePmdMapped: 0 kB (0.00 MB)
+    HugePages_Total: '0'
+    HugePages_Free: '0'
+    HugePages_Rsvd: '0'
+    HugePages_Surp: '0'
+    Hugepagesize: 2048 kB (2.00 MB)
+    Hugetlb: 0 kB (0.00 MB)
+    DirectMap4k: 199680 kB (195.00 MB)
+    DirectMap2M: 1896448 kB (1852.00 MB)
+    DirectMap1G: 10485760 kB (10240.00 MB)
+    MemUsed: 1940524 kB (1895.04 MB)
+    MemUsedPercent: 96.4%
+  disk_usage:
+  - filesystem: /dev/sdc
+    size: 1007G
+    used: 9.1G
+    available: 947G
+    use_percent: 1%
+    mounted_on: /
+  - filesystem: rootfs
+    size: 980M
+    used: 2.4M
+    available: 978M
+    use_percent: 1%
+    mounted_on: /init
+  - filesystem: none
+    size: 983M
+    used: '0'
+    available: 983M
+    use_percent: 0%
+    mounted_on: /dev/shm
+  - filesystem: tmpfs
+    size: 4.0M
+    used: '0'
+    available: 4.0M
+    use_percent: 0%
+    mounted_on: /sys/fs/cgroup
+  - filesystem: none
+    size: 983M
+    used: 604K
+    available: 983M
+    use_percent: 1%
+    mounted_on: /run
+  - filesystem: none
+    size: 983M
+    used: '0'
+    available: 983M
+    use_percent: 0%
+    mounted_on: /run/lock
+  - filesystem: none
+    size: 983M
+    used: 84K
+    available: 983M
+    use_percent: 1%
+    mounted_on: /run/user
+  - filesystem: tmpfs
+    size: 197M
+    used: 16K
+    available: 197M
+    use_percent: 1%
+    mounted_on: /run/user/1000
+  - filesystem: drivers
+    size: 1.9T
+    used: 1.6T
+    available: 227G
+    use_percent: 88%
+    mounted_on: /usr/lib/wsl/drivers
+  - filesystem: none
+    size: 983M
+    used: '0'
+    available: 983M
+    use_percent: 0%
+    mounted_on: /usr/lib/wsl/lib
+  - filesystem: none
+    size: 983M
+    used: 4.0K
+    available: 983M
+    use_percent: 1%
+    mounted_on: /mnt/wsl
+  - filesystem: none
+    size: 983M
+    used: 76K
+    available: 983M
+    use_percent: 1%
+    mounted_on: /mnt/wslg/versions.txt
+  - filesystem: none
+    size: 983M
+    used: 76K
+    available: 983M
+    use_percent: 1%
+    mounted_on: /mnt/wslg/doc
+  - filesystem: none
+    size: 983M
+    used: '0'
+    available: 983M
+    use_percent: 0%
+    mounted_on: /usr/lib/modules/5.15.167.4-microsoft-standard-WSL2
+  - filesystem: C:\
+    size: 1.9T
+    used: 1.6T
+    available: 227G
+    use_percent: 88%
+    mounted_on: /mnt/c
+  process_count: 57
+  uptime: '15:49:58 up 17:29,  1 user,  load average: 0.06, 0.12, 0.08'
+  cpu_percent: 0.1
+  cpu_count:
+    physical: 16
+    logical: 32
+  memory_detailed:
+    total: 1.92 GB
+    available: 509.45 MB
+    percent_used: 74.1
+    used: 1.25 GB
+    free: 66.83 MB
+  disk_detailed:
+  - device: /dev/sdc
+    mountpoint: /
+    fstype: ext4
+    total: 1006.85 GB
+    used: 9.08 GB
+    free: 946.55 GB
+    percent: 1.0
+  - device: /dev/sdc
+    mountpoint: /mnt/wslg/distro
+    fstype: ext4
+    total: 1006.85 GB
+    used: 9.08 GB
+    free: 946.55 GB
+    percent: 1.0
+  - device: /dev/sdc
+    mountpoint: /var/lib/docker
+    fstype: ext4
+    total: 1006.85 GB
+    used: 9.08 GB
+    free: 946.55 GB
+    percent: 1.0
+  network:
+    hostname: DESKTOP-FU6ASJ2
+    ip_address: 127.0.1.1
+  boot_time: '2025-04-11T22:20:29'
+  timestamp: '2025-04-12T15:49:59.133655'

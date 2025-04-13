@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 """
-ServerInspect - A Python-based server inspection and testing tool.
+ServerInspect - Main entry point wrapper
 
-Similar to InSpec, Goss, and ServerSpec, this tool allows you to define,
-run, and report on server tests and audits.
+This is a convenience entry point for development.
+For production, use the executable or call src/main.py directly.
 """
 
+# Import from the package in src
+import sys
+from pathlib import Path
+
+# Add src to path if not already there
+src_path = Path(__file__).parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+# Import the CLI
 from serverinspect.cli import cli
 
 if __name__ == '__main__':

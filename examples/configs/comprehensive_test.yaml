@@ -1,0 +1,174 @@
+---
+# ServerInspect Comprehensive Test Configuration
+# This example demonstrates all available test types and options
+
+title: "Comprehensive Server Test"
+description: "Tests all available features of ServerInspect"
+author: "ServerInspect Team"
+version: "1.0"
+
+# Test environment configuration
+environment:
+  variables:
+    web_service: "nginx"
+    db_service: "postgresql"
+    app_directory: "/var/www/app"
+    config_path: "/etc/app/config.json"
+    web_port: 80
+    db_port: 5432
+
+# Test definitions
+tests:
+  # File tests
+  - name: "Check if application directory exists"
+    type: "file"
+    path: "{{ app_directory }}"
+    exists: true
+    type: "directory"
+    permissions: "755"
+    owner: "www-data"
+    group: "www-data"
+    
+  - name: "Check if configuration file exists and contains valid JSON"
+    type: "file"
+    path: "{{ config_path }}"
+    exists: true
+    type: "file"
+    permissions: "644"
+    contains: '"database":'
+    match_regex: '"port":\s*\d+'
+    
+  - name: "Check if log directory is empty"
+    type: "file"
+    path: "/var/log/app"
+    exists: true
+    type: "directory"
+    empty: false
+    
+  - name: "Check symlink to configuration"
+    type: "file"
+    path: "/etc/app/current-config"
+    exists: true
+    type: "symlink"
+    target: "{{ config_path }}"
+
+  # Command tests  
+  - name: "Check web server version"
+    type: "command"
+    command: "{{ web_service }} -v"
+    exit_code: 0
+    stdout_contains: "version"
+    stderr_empty: true
+    timeout: 5
+    
+  - name: "Check database connection"
+    type: "command"
+    command: "psql -U postgres -c 'SELECT version()'"
+    exit_code: 0
+    stdout_contains: "PostgreSQL"
+    
+  - name: "Check disk space"
+    type: "command"
+    command: "df -h /"
+    stdout_match_regex: "([0-9]+)%.*/$"
+    stdout_not_contains: "100%"
+    
+  - name: "Check JSON output parsing"
+    type: "command"
+    command: "curl -s http://localhost:{{ web_port }}/api/status"
+    stdout_json_path: "$.status"
+    stdout_json_equals: "running"
+    
+  # Service tests
+  - name: "Check if web server is running"
+    type: "service"
+    service: "{{ web_service }}"
+    running: true
+    enabled: true
+    
+  - name: "Check if database service is running"
+    type: "service"
+    service: "{{ db_service }}"
+    running: true
+    enabled: true
+    
+  - name: "Check if firewall is active"
+    type: "service"
+    service: "ufw"
+    running: true
+
+  # Process tests  
+  - name: "Check web server process"
+    type: "process"
+    process_name: "{{ web_service }}"
+    running: true
+    min_count: 1
+    max_count: 10
+    
+  - name: "Check database process"
+    type: "process"
+    process_name: "postgres"
+    running: true
+    user: "postgres"
+    
+  - name: "Check no developer tools running in production"
+    type: "process"
+    process_name: "node"
+    running: false
+
+  # Package tests
+  - name: "Check web server package"
+    type: "package"
+    package: "{{ web_service }}"
+    installed: true
+    min_version: "1.18"
+    
+  - name: "Check database package"
+    type: "package"
+    package: "postgresql"
+    installed: true
+    
+  - name: "Check development packages not installed"
+    type: "package"
+    package: "build-essential"
+    installed: false
+
+  # Port tests
+  - name: "Check web server port"
+    type: "port"
+    port: "{{ web_port }}"
+    listening: true
+    protocol: "tcp"
+    process: "{{ web_service }}"
+    
+  - name: "Check database port"
+    type: "port"
+    port: "{{ db_port }}"
+    listening: true
+    
+  - name: "Check no telnet port"
+    type: "port"
+    port: 23
+    listening: false
+
+# Conditional sections
+conditional_tests:
+  ubuntu:
+    - name: "Ubuntu-specific test"
+      type: "command"
+      command: "lsb_release -a"
+      stdout_contains: "Ubuntu"
+      
+  debian:
+    - name: "Debian-specific test"
+      type: "command"
+      command: "cat /etc/debian_version"
+      exit_code: 0
+
+# Output configuration
+output:
+  title: "Comprehensive Test Results"
+  format: "terminal"
+  details: true
+  show_passing: true
+  summary: true 

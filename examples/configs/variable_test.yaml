@@ -1,0 +1,29 @@
+---
+# Test configuration with variables
+
+title: "Variable Substitution Test"
+description: "Tests the variable substitution functionality"
+
+# Environment variables
+environment:
+  variables:
+    test_port: 80
+    test_file: "/tmp/test-file.txt"
+    test_process: "python"
+
+# Test definitions
+tests:
+  - name: "Check port with variable"
+    type: "port"
+    port: "{{ test_port }}"
+    listening: false
+    
+  - name: "Check file with variable"
+    type: "file"
+    path: "{{ test_file }}"
+    exists: false
+    
+  - name: "Check process with variable"
+    type: "process"
+    process_name: "{{ test_process }}"
+    running: true 
