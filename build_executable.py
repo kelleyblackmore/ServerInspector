@@ -66,7 +66,6 @@ def build_executable(target_platform=None):
         # Always use src layout
         cmd.extend([
             "--add-data", f"src/serverinspect/templates:templates",
-            "--add-data", f"src/attached_assets:attached_assets",
             "src/main.py"
         ])
         
