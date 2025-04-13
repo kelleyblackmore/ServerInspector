@@ -54,7 +54,7 @@ jobs:
       - name: Build with PyInstaller (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          pyinstaller serverinspect-linux.spec --clean
+          pyinstaller --onefile --name serverinspect --clean src/main.py --add-data "src/serverinspect/templates:templates"
       
       - name: Build with PyInstaller (Windows)
         if: matrix.os == 'windows-latest'
