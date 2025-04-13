@@ -17,5 +17,5 @@ if src_dir not in sys.path:
 
 from serverinspect.cli import cli
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

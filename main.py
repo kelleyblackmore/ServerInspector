@@ -18,5 +18,5 @@ if str(src_path) not in sys.path:
 # Import the CLI
 from serverinspect.cli import cli
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

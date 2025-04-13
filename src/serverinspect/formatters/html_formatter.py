@@ -1,6 +1,7 @@
 """
 HTML formatter for ServerInspect.
 """
+
 import os
 import logging
 import jinja2
@@ -10,32 +11,33 @@ from serverinspect.formatters.base import BaseFormatter
 
 logger = logging.getLogger("serverinspect")
 
+
 class HTMLFormatter(BaseFormatter):
     """
     Formatter that outputs results as HTML.
     """
-    
+
     def __init__(self):
         """Initialize the HTML formatter."""
         # Set up Jinja2 environment
         template_path = Path(__file__).parent.parent / "templates"
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_path),
-            autoescape=jinja2.select_autoescape(['html', 'xml'])
+            autoescape=jinja2.select_autoescape(["html", "xml"]),
         )
-    
+
     def format(self, results):
         """
         Format the test results as HTML.
-        
+
         Args:
             results (dict): Test results
-            
+
         Returns:
             str: HTML-formatted results
         """
         logger.debug("Formatting results as HTML")
-        
+
         # Load the template
         try:
             template = self.jinja_env.get_template("report.html.j2")
@@ -316,6 +318,6 @@ class HTMLFormatter(BaseFormatter):
 </html>
 """
             template = jinja2.Template(template_str)
-        
+
         # Render the template
         return template.render(results=results)
