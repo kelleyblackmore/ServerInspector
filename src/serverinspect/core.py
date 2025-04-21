@@ -2,16 +2,13 @@
 Core functionality for ServerInspect.
 """
 
-import os
-import sys
 import logging
-import importlib
 from datetime import datetime
 
-from serverinspect.runners import get_runner
+from serverinspect.checkers import get_checker
 from serverinspect.collectors.system_info import collect_system_info
 from serverinspect.formatters import get_formatter
-from serverinspect.checkers import get_checker
+from serverinspect.runners import get_runner
 
 logger = logging.getLogger("serverinspect")
 

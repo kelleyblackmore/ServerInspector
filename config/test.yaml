@@ -1,0 +1,26 @@
+---
+# Simple test configuration for Docker
+name: Docker Test Config
+description: Basic tests to verify Docker installation
+
+checks:
+  - name: Check Python Version
+    type: command
+    command: python --version
+    exit_code: 0
+    contains: "Python 3"
+
+  - name: Check Container Environment
+    type: command
+    command: env | grep PYTHONPATH
+    exit_code: 0
+
+  - name: Check Host Access
+    type: file
+    path: /host/etc/hosts
+    exists: true
+
+report:
+  title: "Docker Test Results"
+  format: text
+  output: stdout

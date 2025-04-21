@@ -92,4 +92,4 @@ release:
         - name: 'Linux Binary'
           url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/serverinspect-linux?job=build:linux'
         - name: 'Linux Binary (Short name)'
-          url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/si-linux?job=build:linux' 
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/si-linux?job=build:linux'

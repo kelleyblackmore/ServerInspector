@@ -4,6 +4,7 @@ JSON formatter for ServerInspect.
 
 import json
 import logging
+
 from serverinspect.formatters.base import BaseFormatter
 
 logger = logging.getLogger("serverinspect")

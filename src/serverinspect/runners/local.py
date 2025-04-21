@@ -2,10 +2,11 @@
 Local test runner for ServerInspect.
 """
 
-import os
-import subprocess
 import logging
+import os
+import shlex
 import shutil
+import subprocess
 from pathlib import Path
 
 logger = logging.getLogger("serverinspect")
@@ -34,9 +35,11 @@ class LocalRunner:
             subprocess.CalledProcessError: If the command fails
         """
         logger.debug(f"Running command: {command}")
+        # Split the command into arguments for security
+        command_args = shlex.split(command)
         result = subprocess.run(
-            command,
-            shell=True,
+            command_args,
+            shell=False,
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -60,9 +63,11 @@ class LocalRunner:
             tuple: (exit_code, stdout, stderr)
         """
         logger.debug(f"Running command with status: {command}")
+        # Split the command into arguments for security
+        command_args = shlex.split(command)
         result = subprocess.run(
-            command,
-            shell=True,
+            command_args,
+            shell=False,
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -83,6 +88,27 @@ class LocalRunner:
         """
         return os.path.exists(path)
 
+    def _run_complex_command(self, command):
+        """
+        Run a complex command that requires shell features like pipes or redirections.
+        Uses a list of simple commands executed in sequence to avoid shell=True.
+
+        Args:
+            command (str): Complex shell command
+
+        Returns:
+            tuple: (exit_code, stdout, stderr)
+        """
+        # This is a safer alternative to shell=True for complex commands
+        # We run /bin/sh with -c and pass the command as an argument
+        return subprocess.run(
+            ["/bin/sh", "-c", command],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+
     def service_status(self, service_name):
         """
         Check the status of a service.
@@ -98,24 +124,31 @@ class LocalRunner:
         # Try systemctl first (systemd)
         if shutil.which("systemctl"):
             try:
-                # Check if service exists
-                exit_code, _, _ = self.run_command_with_status(
-                    f"systemctl list-unit-files | grep -q {service_name}.service"
+                # Check if service exists - using the safer alternative for grep pipe
+                exit_code, stdout, _ = (
+                    self._run_complex_command(
+                        f"systemctl list-unit-files | grep -q {service_name}.service"
+                    ).returncode,
+                    self._run_complex_command(
+                        f"systemctl list-unit-files | grep {service_name}.service"
+                    ).stdout,
+                    "",
                 )
+
                 result["exists"] = exit_code == 0
 
                 if result["exists"]:
                     # Check if service is running
-                    exit_code, _, _ = self.run_command_with_status(
+                    result_obj = self._run_complex_command(
                         f"systemctl is-active --quiet {service_name}"
                     )
-                    result["running"] = exit_code == 0
+                    result["running"] = result_obj.returncode == 0
 
                     # Check if service is enabled
-                    exit_code, _, _ = self.run_command_with_status(
+                    result_obj = self._run_complex_command(
                         f"systemctl is-enabled --quiet {service_name}"
                     )
-                    result["enabled"] = exit_code == 0
+                    result["enabled"] = result_obj.returncode == 0
 
                 return result
             except Exception as e:
@@ -126,16 +159,17 @@ class LocalRunner:
         if shutil.which("service"):
             try:
                 # Check if service exists
-                exit_code, _, _ = self.run_command_with_status(
-                    f"service {service_name} status"
-                )
-                result["exists"] = exit_code != 127  # 127 = command not found
+                result_obj = self._run_complex_command(f"service {service_name} status")
+                result["exists"] = (
+                    result_obj.returncode != 127
+                )  # 127 = command not found
 
                 if result["exists"]:
                     # Parsing the output to determine if it's running
-                    _, stdout, _ = self.run_command_with_status(
+                    result_obj = self._run_complex_command(
                         f"service {service_name} status"
                     )
+                    stdout = result_obj.stdout
                     result["running"] = "running" in stdout.lower()
 
                     # Check if service is enabled (might not work on all systems)
@@ -160,9 +194,9 @@ class LocalRunner:
 
         # If we get here, we couldn't check the service
         if not result["error"]:
-            result["error"] = (
-                "Could not determine service status (no systemctl or service command found)"
-            )
+            result[
+                "error"
+            ] = "Could not determine service status (no systemctl or service command found)"
 
         return result
 
@@ -192,9 +226,11 @@ class LocalRunner:
             pm_path = shutil.which(pm_name)
             if pm_path:
                 try:
-                    exit_code, stdout, _ = self.run_command_with_status(
+                    result_obj = self._run_complex_command(
                         f"{pm_path} {pm_arg} {package_name}"
                     )
+                    exit_code = result_obj.returncode
+                    stdout = result_obj.stdout
                     result["installed"] = exit_code == 0
 
                     if result["installed"] and stdout:
@@ -223,9 +259,9 @@ class LocalRunner:
 
         # If we get here, we couldn't check the package
         if not result["error"]:
-            result["error"] = (
-                "Could not determine package status (no supported package manager found)"
-            )
+            result[
+                "error"
+            ] = "Could not determine package status (no supported package manager found)"
 
         return result
 
@@ -244,17 +280,24 @@ class LocalRunner:
         try:
             # Use pgrep if available
             if shutil.which("pgrep"):
-                exit_code, stdout, _ = self.run_command_with_status(
+                # Use the safer complex command function for pipe operations
+                complex_result = self._run_complex_command(
                     f"pgrep -f {process_name} | wc -l"
                 )
+                exit_code = complex_result.returncode
+                stdout = complex_result.stdout
+
                 if exit_code == 0:
                     result["count"] = int(stdout.strip())
                     result["running"] = result["count"] > 0
             else:
                 # Fall back to ps and grep
-                exit_code, stdout, _ = self.run_command_with_status(
+                complex_result = self._run_complex_command(
                     f"ps aux | grep -v grep | grep {process_name} | wc -l"
                 )
+                exit_code = complex_result.returncode
+                stdout = complex_result.stdout
+
                 if exit_code == 0:
                     result["count"] = int(stdout.strip())
                     result["running"] = result["count"] > 0

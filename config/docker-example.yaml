@@ -1,0 +1,90 @@
+---
+# ServerInspect Docker Example Configuration
+# This example demonstrates checks that work well in the Docker environment
+
+name: Docker Environment Validation
+description: Check common server configurations in a Docker context
+version: 1.0.0
+
+checks:
+  # System Information Checks
+  - name: Check OS Distribution
+    type: file
+    path: /host/etc/os-release
+    exists: true
+    contains: "Ubuntu|Debian|CentOS|RHEL|Amazon Linux"
+
+  - name: Check System Hostname
+    type: command
+    command: hostname
+    exit_code: 0
+
+  - name: Check Host Kernel Version
+    type: command
+    command: cat /host/proc/version
+    exit_code: 0
+    contains: "Linux"
+
+  # Network Checks
+  - name: Check Network Interfaces
+    type: command
+    command: ip addr
+    exit_code: 0
+    contains: "inet"
+
+  - name: Check Network Connectivity
+    type: command
+    command: ping -c 1 8.8.8.8
+    exit_code: 0
+    contains: "64 bytes from"
+
+  # Service Checks
+  - name: Check SSH Service on Host
+    type: port
+    target: "127.0.0.1:22"
+    timeout: 2
+    should_be_open: true
+    optional: true
+    skip_reason: "SSH port check may fail in container"
+
+  # Configuration File Checks
+  - name: Check Host's Host Configuration
+    type: file
+    path: /host/etc/hosts
+    exists: true
+    contains: "localhost"
+
+  - name: Validate Host's DNS Configuration
+    type: file
+    path: /host/etc/resolv.conf
+    exists: true
+    contains: "nameserver"
+
+  # Security Checks
+  - name: Check Host Password Policy
+    type: file
+    path: /host/etc/pam.d/common-password
+    exists: true
+    contains: "password"
+    optional: true
+    skip_reason: "File may not exist on all distributions"
+
+  - name: Check Host's SSH Configuration
+    type: config
+    path: /host/etc/ssh/sshd_config
+    has_key: "PermitRootLogin"
+    optional: true
+    skip_reason: "SSH config may not exist in all environments"
+
+  # Package Checks
+  - name: Check for Critical Packages
+    type: command
+    command: "[ -x /usr/bin/apt ] && apt list --installed 2>/dev/null | grep -E 'openssl|bash|coreutils' || echo 'Package manager not found'"
+    exit_code: 0
+
+# Report configuration
+report:
+  title: "Docker Environment Validation Report"
+  format: text
+  show_skipped: true
+  output: stdout

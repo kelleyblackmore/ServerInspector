@@ -5,8 +5,8 @@ This module provides simple functions to check package-related aspects of a syst
 """
 
 import logging
-import subprocess
 import shutil
+import subprocess
 
 logger = logging.getLogger("serverinspect")
 
@@ -47,7 +47,9 @@ def check(params):
             if expected_installed:
                 result["message"] = f"Package '{package_name}' is not installed"
             else:
-                result["message"] = f"Package '{package_name}' is installed but should not be"
+                result[
+                    "message"
+                ] = f"Package '{package_name}' is installed but should not be"
             return result
 
     # If we're checking that package should not be installed and it's not
@@ -63,7 +65,9 @@ def check(params):
         result["details"]["expected_version"] = expected_version
 
         if expected_version != actual_version:
-            result["message"] = f"Package '{package_name}' version is {actual_version}, expected {expected_version}"
+            result[
+                "message"
+            ] = f"Package '{package_name}' version is {actual_version}, expected {expected_version}"
             return result
 
     # All checks passed
@@ -85,31 +89,29 @@ def run(runner, test_config):
         dict: Test result in the old format
     """
     # Convert parameters to the new format
-    params = {
-        "package": test_config.get("package")
-    }
-    
+    params = {"package": test_config.get("package")}
+
     # Copy other parameters
     if "installed" in test_config:
         params["installed"] = test_config["installed"]
     if "version" in test_config:
         params["version"] = test_config["version"]
-    
+
     # Run the check
     result = check(params)
-    
+
     # Convert the result back to the old format
     old_result = {
         "name": test_config.get("name", "Unnamed package test"),
         "type": "package",
         "result": result["success"],
-        "details": result["details"]
+        "details": result["details"],
     }
-    
+
     # Add error message if check failed
     if not result["success"]:
         old_result["details"]["error"] = result["message"]
-    
+
     return old_result
 
 
@@ -135,7 +137,7 @@ def _get_package_info(package_name):
         try:
             # Check if package is installed
             proc = subprocess.run(
-                ["dpkg", "-s", package_name],
+                ["/usr/bin/dpkg", "-s", package_name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -148,7 +150,7 @@ def _get_package_info(package_name):
                     if line.startswith("Version:"):
                         pkg_info["version"] = line.split(":", 1)[1].strip()
                         break
-        except Exception as e:
+        except subprocess.SubprocessError as e:
             logger.error(f"Error checking dpkg package: {str(e)}")
 
     elif shutil.which("rpm"):
@@ -157,7 +159,7 @@ def _get_package_info(package_name):
         try:
             # Check if package is installed
             proc = subprocess.run(
-                ["rpm", "-q", package_name],
+                ["/usr/bin/rpm", "-q", package_name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -171,7 +173,7 @@ def _get_package_info(package_name):
                     parts = output.split("-")
                     if len(parts) >= 2:
                         pkg_info["version"] = parts[1]
-        except Exception as e:
+        except subprocess.SubprocessError as e:
             logger.error(f"Error checking rpm package: {str(e)}")
 
     elif shutil.which("pacman"):
@@ -180,7 +182,7 @@ def _get_package_info(package_name):
         try:
             # Check if package is installed
             proc = subprocess.run(
-                ["pacman", "-Q", package_name],
+                ["/usr/bin/pacman", "-Q", package_name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -193,7 +195,7 @@ def _get_package_info(package_name):
                 parts = output.split(" ")
                 if len(parts) >= 2:
                     pkg_info["version"] = parts[1]
-        except Exception as e:
+        except subprocess.SubprocessError as e:
             logger.error(f"Error checking pacman package: {str(e)}")
 
     elif shutil.which("apk"):
@@ -202,7 +204,7 @@ def _get_package_info(package_name):
         try:
             # Check if package is installed
             proc = subprocess.run(
-                ["apk", "info", "-e", package_name],
+                ["/sbin/apk", "info", "-e", package_name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -212,7 +214,7 @@ def _get_package_info(package_name):
             if pkg_info["installed"]:
                 # Get version
                 version_proc = subprocess.run(
-                    ["apk", "info", "-v", package_name],
+                    ["/sbin/apk", "info", "-v", package_name],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
@@ -222,7 +224,7 @@ def _get_package_info(package_name):
                     parts = output.split("-")
                     if len(parts) >= 2:
                         pkg_info["version"] = parts[1]
-        except Exception as e:
+        except subprocess.SubprocessError as e:
             logger.error(f"Error checking apk package: {str(e)}")
 
     return pkg_info

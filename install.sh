@@ -1,154 +1,433 @@
 #!/bin/bash
 #
-# ServerInspect Installation Script
+# ServerInspect Universal Installer
+# This script detects your operating system and installs ServerInspect
+# in the most appropriate way.
 #
 # Usage:
-#   curl -sSL https://raw.githubusercontent.com/yourusername/ServerInspector/main/install.sh | bash
-#
+#   curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/install.sh | bash
+#   # or
+#   wget -qO- https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/install.sh | bash
 
 set -e
-
-# Text formatting
 BOLD="\033[1m"
-RED="\033[31m"
-GREEN="\033[32m"
-YELLOW="\033[33m"
-BLUE="\033[34m"
 RESET="\033[0m"
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+YELLOW="\033[0;33m"
+BLUE="\033[0;34m"
 
-# Default values
-VERSION="latest"
-INSTALL_DIR="$HOME/.local/bin"
-GITHUB_REPO="yourusername/ServerInspector"
+echo -e "${BOLD}ServerInspect Installer${RESET}"
+echo "Detecting system configuration..."
 
-echo -e "${BOLD}${BLUE}ServerInspect Installer${RESET}"
-echo "This script will install ServerInspect to your system."
-echo ""
+# Check for Docker
+HAS_DOCKER=false
+if command -v docker >/dev/null 2>&1; then
+    HAS_DOCKER=true
+    echo -e "• ${GREEN}Docker detected${RESET}"
+else
+    echo -e "• ${YELLOW}Docker not found${RESET}"
+fi
 
-# Detect OS type
-echo -e "${BOLD}Detecting operating system...${RESET}"
-OS="unknown"
+# Check for Python
+HAS_PYTHON=false
+PYTHON_VERSION=""
+if command -v python3 >/dev/null 2>&1; then
+    HAS_PYTHON=true
+    PYTHON_VERSION=$(python3 --version 2>&1)
+    echo -e "• ${GREEN}$PYTHON_VERSION detected${RESET}"
+elif command -v python >/dev/null 2>&1; then
+    # Check if python is python3
+    PY_VERSION=$(python --version 2>&1)
+    if [[ $PY_VERSION == Python\ 3* ]]; then
+        HAS_PYTHON=true
+        PYTHON_VERSION=$PY_VERSION
+        echo -e "• ${GREEN}$PYTHON_VERSION detected${RESET}"
+    else
+        echo -e "• ${YELLOW}$PY_VERSION detected (Python 3 required)${RESET}"
+    fi
+else
+    echo -e "• ${YELLOW}Python not found${RESET}"
+fi
+
+# Check pipx
+HAS_PIPX=false
+if command -v pipx >/dev/null 2>&1; then
+    HAS_PIPX=true
+    echo -e "• ${GREEN}pipx detected${RESET}"
+else
+    echo -e "• ${YELLOW}pipx not found${RESET}"
+fi
+
+# Check pip
+HAS_PIP=false
+if command -v pip >/dev/null 2>&1; then
+    HAS_PIP=true
+    echo -e "• ${GREEN}pip detected${RESET}"
+else
+    echo -e "• ${YELLOW}pip not found${RESET}"
+fi
+
+# Detect OS
+OS=""
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     OS="linux"
-    echo "Linux detected"
+    # Detect distribution
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DISTRO=$ID
+        echo -e "• ${GREEN}Linux detected: $NAME${RESET}"
+    else
+        DISTRO="unknown"
+        echo -e "• ${GREEN}Linux detected: unknown distribution${RESET}"
+    fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     OS="macos"
-    echo "macOS detected"
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+    echo -e "• ${GREEN}macOS detected${RESET}"
+elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
     OS="windows"
-    echo "Windows detected"
+    echo -e "• ${GREEN}Windows detected${RESET}"
 else
-    echo -e "${BOLD}${RED}Unsupported operating system: $OSTYPE${RESET}"
-    echo "Please download the appropriate binary from the GitHub releases page."
-    exit 1
+    echo -e "• ${YELLOW}Unknown OS: $OSTYPE${RESET}"
 fi
 
-# Create installation directory if it doesn't exist
-if [ ! -d "$INSTALL_DIR" ]; then
-    echo -e "${BOLD}Creating installation directory: $INSTALL_DIR${RESET}"
-    mkdir -p "$INSTALL_DIR"
-fi
-
-# Make sure installation directory is in PATH
-if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-    echo -e "${BOLD}${YELLOW}Warning: $INSTALL_DIR is not in your PATH.${RESET}"
-    echo "Adding it to your shell configuration..."
-    
-    # Detect shell and update configuration
-    SHELL_CONFIG=""
-    if [ -f "$HOME/.bashrc" ]; then
-        SHELL_CONFIG="$HOME/.bashrc"
-    elif [ -f "$HOME/.zshrc" ]; then
-        SHELL_CONFIG="$HOME/.zshrc"
-    elif [ -f "$HOME/.profile" ]; then
-        SHELL_CONFIG="$HOME/.profile"
-    else
-        echo -e "${BOLD}${YELLOW}Could not find shell configuration file.${RESET}"
-        echo "Please add the following line to your shell configuration file:"
-        echo "export PATH=\"\$PATH:$INSTALL_DIR\""
-    fi
-    
-    if [ -n "$SHELL_CONFIG" ]; then
-        echo "Updating $SHELL_CONFIG..."
-        echo "" >> "$SHELL_CONFIG"
-        echo "# Added by ServerInspect installer" >> "$SHELL_CONFIG"
-        echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$SHELL_CONFIG"
-        echo -e "${GREEN}Shell configuration updated.${RESET}"
-        echo "Please run 'source $SHELL_CONFIG' to update your current session."
-    fi
-fi
-
-# Download the latest release
-if [ "$VERSION" = "latest" ]; then
-    RELEASE_URL="https://api.github.com/repos/$GITHUB_REPO/releases/latest"
-    echo -e "${BOLD}Fetching latest release...${RESET}"
-    
-    if command -v curl &> /dev/null; then
-        VERSION=$(curl -s $RELEASE_URL | grep -o '"tag_name": "[^"]*' | cut -d'"' -f4)
-    elif command -v wget &> /dev/null; then
-        VERSION=$(wget -q -O- $RELEASE_URL | grep -o '"tag_name": "[^"]*' | cut -d'"' -f4)
-    else
-        echo -e "${BOLD}${RED}Error: Neither curl nor wget is installed.${RESET}"
-        exit 1
-    fi
-    
-    if [ -z "$VERSION" ]; then
-        echo -e "${BOLD}${RED}Error: Could not determine latest version.${RESET}"
-        echo "Please specify a version manually or check your internet connection."
-        exit 1
-    fi
-    
-    echo "Latest version: $VERSION"
-fi
-
-# Prepare download URL
-BASE_URL="https://github.com/$GITHUB_REPO/releases/download/$VERSION"
-if [ "$OS" = "linux" ]; then
-    BINARY_URL="$BASE_URL/serverinspect-linux"
-    BINARY_NAME="serverinspect"
-elif [ "$OS" = "macos" ]; then
-    BINARY_URL="$BASE_URL/serverinspect-macos"
-    BINARY_NAME="serverinspect"
-elif [ "$OS" = "windows" ]; then
-    BINARY_URL="$BASE_URL/serverinspect-windows.exe"
-    BINARY_NAME="serverinspect.exe"
-fi
-
-# Download the binary
-echo -e "${BOLD}Downloading ServerInspect $VERSION for $OS...${RESET}"
-if command -v curl &> /dev/null; then
-    curl -L -o "$INSTALL_DIR/$BINARY_NAME" "$BINARY_URL"
-elif command -v wget &> /dev/null; then
-    wget -O "$INSTALL_DIR/$BINARY_NAME" "$BINARY_URL"
-else
-    echo -e "${BOLD}${RED}Error: Neither curl nor wget is installed.${RESET}"
-    exit 1
-fi
-
-# Make binary executable
-if [ "$OS" != "windows" ]; then
-    chmod +x "$INSTALL_DIR/$BINARY_NAME"
-fi
-
-# Create si alias
-if [ "$OS" != "windows" ]; then
-    ln -sf "$INSTALL_DIR/$BINARY_NAME" "$INSTALL_DIR/si"
-else
-    cp "$INSTALL_DIR/$BINARY_NAME" "$INSTALL_DIR/si.exe"
-fi
-
-# Add shell aliases
-if [ -n "$SHELL_CONFIG" ]; then
-    echo "Adding shell aliases..."
-    echo "# ServerInspect aliases" >> "$SHELL_CONFIG"
-    echo "alias si='$INSTALL_DIR/si'" >> "$SHELL_CONFIG"
-    echo "alias serverinspect='$INSTALL_DIR/serverinspect'" >> "$SHELL_CONFIG"
-fi
-
-echo -e "${BOLD}${GREEN}ServerInspect has been successfully installed!${RESET}"
 echo ""
-echo "You can now run it using one of these commands:"
-echo "  serverinspect --help"
-echo "  si --help"
+echo -e "${BOLD}Installation Options:${RESET}"
+
+# Determine preferred installation method
+if [ "$HAS_DOCKER" = true ]; then
+    PREFERRED="docker"
+    echo -e "1. ${BOLD}Docker (Recommended)${RESET}: Isolated container with all dependencies"
+elif [ "$HAS_PIPX" = true ]; then
+    PREFERRED="pipx"
+    echo -e "1. ${BOLD}pipx (Recommended)${RESET}: Isolated Python package installation"
+elif [ "$HAS_PYTHON" = true ] && [ "$HAS_PIP" = true ]; then
+    PREFERRED="pip"
+    echo -e "1. ${BOLD}pip (Recommended)${RESET}: Python package installation"
+else
+    PREFERRED="source"
+    echo -e "1. ${BOLD}Source (Recommended)${RESET}: Manual installation from source"
+fi
+
+# List other options based on what's available
+if [ "$PREFERRED" != "docker" ] && [ "$HAS_DOCKER" = true ]; then
+    echo "2. Docker: Isolated container with all dependencies"
+fi
+
+if [ "$PREFERRED" != "pipx" ] && [ "$HAS_PIPX" = true ]; then
+    echo "2. pipx: Isolated Python package installation"
+fi
+
+if [ "$PREFERRED" != "pip" ] && [ "$HAS_PYTHON" = true ] && [ "$HAS_PIP" = true ]; then
+    echo "3. pip: Python package installation"
+fi
+
+if [ "$PREFERRED" != "source" ]; then
+    echo "4. Source: Manual installation from source"
+fi
+
 echo ""
-echo -e "${YELLOW}Note: You may need to restart your terminal or run 'source $SHELL_CONFIG' to use the command.${RESET}" 
+
+read -p "Select installation method [1]: " CHOICE
+CHOICE=${CHOICE:-1}
+
+case $CHOICE in
+    1)
+        METHOD=$PREFERRED
+        ;;
+    2)
+        if [ "$PREFERRED" = "docker" ]; then
+            if [ "$HAS_PIPX" = true ]; then
+                METHOD="pipx"
+            elif [ "$HAS_PYTHON" = true ] && [ "$HAS_PIP" = true ]; then
+                METHOD="pip"
+            else
+                METHOD="source"
+            fi
+        elif [ "$PREFERRED" = "pipx" ]; then
+            if [ "$HAS_DOCKER" = true ]; then
+                METHOD="docker"
+            else
+                METHOD="source"
+            fi
+        else
+            if [ "$HAS_DOCKER" = true ]; then
+                METHOD="docker"
+            elif [ "$HAS_PIPX" = true ]; then
+                METHOD="pipx"
+            elif [ "$HAS_PYTHON" = true ] && [ "$HAS_PIP" = true ]; then
+                METHOD="pip"
+            else
+                echo -e "${RED}Invalid selection.${RESET}"
+                exit 1
+            fi
+        fi
+        ;;
+    3)
+        if [ "$HAS_PIPX" = true ]; then
+            METHOD="pipx"
+        else
+            METHOD="pip"
+        fi
+        ;;
+    4)
+        METHOD="source"
+        ;;
+    *)
+        echo -e "${RED}Invalid selection.${RESET}"
+        exit 1
+        ;;
+esac
+
+echo ""
+echo -e "${BOLD}Installing ServerInspect via $METHOD...${RESET}"
+
+case $METHOD in
+    docker)
+        echo "Creating installation directory..."
+        INSTALL_DIR="$HOME/serverinspect"
+        mkdir -p "$INSTALL_DIR"
+        cd "$INSTALL_DIR"
+
+        echo "Downloading Dockerfile and supporting files..."
+        curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/Dockerfile -o Dockerfile
+        curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/scripts/docker-run.sh -o docker-run.sh
+        chmod +x docker-run.sh
+        mkdir -p config
+
+        echo "Building Docker image..."
+        docker build -t serverinspect .
+
+        echo "Creating wrapper script..."
+        cat > serverinspect << 'EOL'
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+docker run -v "$SCRIPT_DIR/config:/config" \
+           -v /etc:/host/etc:ro \
+           -v /var/log:/host/var/log:ro \
+           -v /proc:/host/proc:ro \
+           serverinspect "$@"
+EOL
+        chmod +x serverinspect
+
+        # Add to PATH if possible
+        if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+            echo "Adding to PATH..."
+            ln -sf "$INSTALL_DIR/serverinspect" "$HOME/.local/bin/serverinspect"
+        fi
+
+        echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
+        echo ""
+        echo "You can now use ServerInspect with:"
+        echo -e "  ${BLUE}$INSTALL_DIR/serverinspect run /config/example.yaml${RESET}"
+
+        if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+            echo -e "  or simply: ${BLUE}serverinspect run /config/example.yaml${RESET}"
+        fi
+        ;;
+
+    pipx)
+        echo "Installing ServerInspect via pipx..."
+        if [ "$HAS_PIPX" = true ]; then
+            # Check if we're already in the repository
+            if [ -f "pyproject.toml" ] && [ -d "src/serverinspect" ]; then
+                echo "Detected existing repository."
+
+                echo "Fixing package configuration..."
+                # Remove test_types reference from pyproject.toml
+                sed -i '/test_types/d' pyproject.toml
+
+                # Make sure the directory exists to avoid the error
+                mkdir -p src/serverinspect/test_types
+
+                echo "Installing with pipx..."
+                pipx install .
+            else
+                # Create temporary directory
+                TEMP_DIR=$(mktemp -d)
+                cd "$TEMP_DIR"
+
+                echo "Cloning repository to modify configuration..."
+                if command -v git >/dev/null 2>&1; then
+                    git clone https://github.com/kelleyblackmore/ServerInspector.git .
+                else
+                    if command -v curl >/dev/null 2>&1; then
+                        curl -sSL https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -o serverinspect.tar.gz
+                    elif command -v wget >/dev/null 2>&1; then
+                        wget -q https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -O serverinspect.tar.gz
+                    else
+                        echo -e "${RED}Error: Neither git, curl, nor wget found. Cannot download source.${RESET}"
+                        exit 1
+                    fi
+
+                    tar xzf serverinspect.tar.gz --strip-components=1
+                    rm serverinspect.tar.gz
+                fi
+
+                echo "Fixing package configuration..."
+                # Remove test_types reference from pyproject.toml
+                sed -i '/test_types/d' pyproject.toml
+
+                # Make sure the directory exists to avoid the error
+                mkdir -p src/serverinspect/test_types
+
+                echo "Installing with pipx..."
+                pipx install .
+
+                # Clean up
+                cd - > /dev/null
+                rm -rf "$TEMP_DIR"
+            fi
+
+            echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
+            echo ""
+            echo "You can now use ServerInspect with:"
+            echo -e "  ${BLUE}serverinspect --help${RESET}"
+        else
+            echo -e "${RED}Error: pipx not found. Installing pipx first...${RESET}"
+            if [ "$HAS_PIP" = true ]; then
+                pip install --user pipx
+                echo -e "${YELLOW}Adding pipx to your PATH...${RESET}"
+                python3 -m pipx ensurepath
+                echo -e "${GREEN}pipx installed.${RESET} Please restart your terminal and run this installer again."
+            else
+                echo -e "${RED}Error: Neither pipx nor pip found. Cannot proceed with pipx installation.${RESET}"
+            fi
+            exit 1
+        fi
+        ;;
+
+    pip)
+        echo "Installing ServerInspect via pip..."
+        if [ "$HAS_PIP" = true ]; then
+            # Check if we're already in the repository
+            if [ -f "pyproject.toml" ] && [ -d "src/serverinspect" ]; then
+                echo "Detected existing repository."
+
+                echo "Fixing package configuration..."
+                # Remove test_types reference from pyproject.toml
+                sed -i '/test_types/d' pyproject.toml
+
+                # Make sure the directory exists to avoid the error
+                mkdir -p src/serverinspect/test_types
+
+                echo "Installing with pip..."
+                pip install --user .
+            else
+                # Create temporary directory
+                TEMP_DIR=$(mktemp -d)
+                cd "$TEMP_DIR"
+
+                echo "Cloning repository to modify configuration..."
+                if command -v git >/dev/null 2>&1; then
+                    git clone https://github.com/kelleyblackmore/ServerInspector.git .
+                else
+                    if command -v curl >/dev/null 2>&1; then
+                        curl -sSL https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -o serverinspect.tar.gz
+                    elif command -v wget >/dev/null 2>&1; then
+                        wget -q https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -O serverinspect.tar.gz
+                    else
+                        echo -e "${RED}Error: Neither git, curl, nor wget found. Cannot download source.${RESET}"
+                        exit 1
+                    fi
+
+                    tar xzf serverinspect.tar.gz --strip-components=1
+                    rm serverinspect.tar.gz
+                fi
+
+                echo "Fixing package configuration..."
+                # Remove test_types reference from pyproject.toml
+                sed -i '/test_types/d' pyproject.toml
+
+                # Make sure the directory exists to avoid the error
+                mkdir -p src/serverinspect/test_types
+
+                echo "Installing with pip..."
+                pip install --user .
+
+                # Clean up
+                cd - > /dev/null
+                rm -rf "$TEMP_DIR"
+            fi
+
+            echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
+            echo ""
+            echo "You can now use ServerInspect with:"
+            echo -e "  ${BLUE}serverinspect --help${RESET}"
+        else
+            echo -e "${RED}Error: pip not found. Cannot install via pip.${RESET}"
+            exit 1
+        fi
+        ;;
+
+    source)
+        echo "Installing from source..."
+        INSTALL_DIR="$HOME/serverinspect"
+        mkdir -p "$INSTALL_DIR"
+        cd "$INSTALL_DIR"
+
+        echo "Downloading source code..."
+        if command -v git >/dev/null 2>&1; then
+            git clone https://github.com/kelleyblackmore/ServerInspector.git .
+        else
+            if command -v curl >/dev/null 2>&1; then
+                curl -sSL https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -o serverinspect.tar.gz
+            elif command -v wget >/dev/null 2>&1; then
+                wget -q https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -O serverinspect.tar.gz
+            else
+                echo -e "${RED}Error: Neither git, curl, nor wget found. Cannot download source.${RESET}"
+                exit 1
+            fi
+
+            tar xzf serverinspect.tar.gz --strip-components=1
+            rm serverinspect.tar.gz
+        fi
+
+        # Create virtualenv if available
+        if [ "$HAS_PYTHON" = true ]; then
+            if command -v python3 -m venv >/dev/null 2>&1; then
+                echo "Creating virtual environment..."
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install .
+
+                cat > serverinspect << 'EOL'
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$SCRIPT_DIR/venv/bin/python" -m serverinspect.cli "$@"
+EOL
+                chmod +x serverinspect
+
+                # Add to PATH if possible
+                if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+                    echo "Adding to PATH..."
+                    ln -sf "$INSTALL_DIR/serverinspect" "$HOME/.local/bin/serverinspect"
+                fi
+
+                echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
+                echo ""
+                echo "You can now use ServerInspect with:"
+                echo -e "  ${BLUE}$INSTALL_DIR/serverinspect --help${RESET}"
+
+                if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+                    echo -e "  or simply: ${BLUE}serverinspect --help${RESET}"
+                fi
+            else
+                echo "Installing dependencies..."
+                pip install -r requirements.txt
+
+                echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
+                echo ""
+                echo "You can now use ServerInspect by navigating to:"
+                echo -e "  ${BLUE}cd $INSTALL_DIR${RESET}"
+                echo "And running:"
+                echo -e "  ${BLUE}python -m serverinspect.cli --help${RESET}"
+            fi
+        else
+            echo -e "${YELLOW}Warning: Python not found. Manual setup required.${RESET}"
+            echo "Please install Python 3.10 or later and then run:"
+            echo -e "  ${BLUE}cd $INSTALL_DIR${RESET}"
+            echo -e "  ${BLUE}pip install -r requirements.txt${RESET}"
+        fi
+        ;;
+esac

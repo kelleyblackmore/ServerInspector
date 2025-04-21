@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  serverinspect:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: serverinspect:latest
+    volumes:
+      # Mount host configuration directory
+      - ${PWD}/config:/config
+      # Mount host system directories for inspection (read-only)
+      - /etc:/host/etc:ro
+      - /var/log:/host/var/log:ro
+      - /proc:/host/proc:ro
+    environment:
+      - HOST_ROOT=/host
+    restart: "no"
+    # Default command runs help, override with your command
+    command: --help

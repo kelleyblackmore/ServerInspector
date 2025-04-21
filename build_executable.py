@@ -4,12 +4,12 @@ Build script to create a standalone executable for ServerInspect using PyInstall
 Supports cross-platform builds for Windows, macOS, and Linux.
 """
 
+import argparse
 import os
 import platform
+import shutil
 import subprocess
 import sys
-import argparse
-import shutil
 from pathlib import Path
 
 
@@ -67,7 +67,7 @@ def build_executable(target_platform=None):
 
         # Always use src layout
         cmd.extend(
-            ["--add-data", f"src/serverinspect/templates:templates", "src/main.py"]
+            ["--add-data", "src/serverinspect/templates:templates", "src/main.py"]
         )
 
         # Run PyInstaller
@@ -132,7 +132,7 @@ def create_platform_output(platform_info, dist_dir):
         os.chmod(output_path, 0o755)
 
     print(f"\nBuild successful! Executable created at: {output_path}")
-    print(f"\nYou can now distribute this executable file.")
+    print("\nYou can now distribute this executable file.")
 
 
 def main():

@@ -5,9 +5,9 @@ This module provides simple functions to check port-related aspects of a system.
 """
 
 import logging
-import subprocess
 import re
 import socket
+import subprocess
 
 logger = logging.getLogger("serverinspect")
 
@@ -50,7 +50,7 @@ def check(params):
     if protocol not in ["tcp", "udp"]:
         result["message"] = f"Invalid protocol: {protocol}"
         return result
-    
+
     result["details"]["protocol"] = protocol
 
     # Get specific address if provided
@@ -70,7 +70,9 @@ def check(params):
             if expected_listening:
                 result["message"] = f"Port {port}/{protocol} is not listening"
             else:
-                result["message"] = f"Port {port}/{protocol} is listening but should not be"
+                result[
+                    "message"
+                ] = f"Port {port}/{protocol} is listening but should not be"
             return result
 
     # All checks passed
@@ -96,11 +98,11 @@ def run(runner, test_config):
     """
     # Convert parameters to the new format
     params = {}
-    
+
     # Handle port parameter
     if "port" in test_config:
         params["port"] = test_config["port"]
-    
+
     # Copy other parameters
     if "protocol" in test_config:
         params["protocol"] = test_config["protocol"]
@@ -108,22 +110,22 @@ def run(runner, test_config):
         params["listening"] = test_config["listening"]
     if "address" in test_config:
         params["address"] = test_config["address"]
-    
+
     # Run the check
     result = check(params)
-    
+
     # Convert the result back to the old format
     old_result = {
         "name": test_config.get("name", "Unnamed port test"),
         "type": "port",
         "result": result["success"],
-        "details": result["details"]
+        "details": result["details"],
     }
-    
+
     # Add error message if check failed
     if not result["success"]:
         old_result["details"]["error"] = result["message"]
-    
+
     return old_result
 
 
@@ -147,7 +149,7 @@ def _check_port(port, protocol="tcp", address="any"):
     try:
         # Try to use ss command (modern socket statistics)
         if _command_exists("ss"):
-            cmd = ["ss", "-l", "-n"]
+            cmd = ["/usr/bin/ss", "-l", "-n"]
             if protocol == "tcp":
                 cmd.append("-t")
             elif protocol == "udp":
@@ -160,7 +162,7 @@ def _check_port(port, protocol="tcp", address="any"):
             if process.returncode == 0:
                 for line in process.stdout.splitlines():
                     # Look for the port in the output
-                    pattern = fr":{port}\b"
+                    pattern = rf":{port}\b"
                     if re.search(pattern, line):
                         if address == "any" or address in line:
                             port_info["listening"] = True
@@ -169,7 +171,7 @@ def _check_port(port, protocol="tcp", address="any"):
 
         # Fallback to netstat if ss is not available
         elif _command_exists("netstat"):
-            cmd = ["netstat", "-l", "-n"]
+            cmd = ["/bin/netstat", "-l", "-n"]
             if protocol == "tcp":
                 cmd.append("-t")
             elif protocol == "udp":
@@ -182,7 +184,7 @@ def _check_port(port, protocol="tcp", address="any"):
             if process.returncode == 0:
                 for line in process.stdout.splitlines():
                     # Look for the port in the output
-                    pattern = fr":{port}\b"
+                    pattern = rf":{port}\b"
                     if re.search(pattern, line):
                         if address == "any" or address in line:
                             port_info["listening"] = True
@@ -198,9 +200,11 @@ def _check_port(port, protocol="tcp", address="any"):
             port_info["listening"] = result == 0
 
         # Get the process using the port if it's listening
-        if port_info["listening"] and (_command_exists("lsof") or _command_exists("fuser")):
+        if port_info["listening"] and (
+            _command_exists("lsof") or _command_exists("fuser")
+        ):
             if _command_exists("lsof"):
-                cmd = ["lsof", f"-i:{port}"]
+                cmd = ["/usr/bin/lsof", f"-i:{port}"]
                 process = subprocess.run(
                     cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
                 )
@@ -210,12 +214,14 @@ def _check_port(port, protocol="tcp", address="any"):
                     for line in lines:
                         parts = line.split()
                         if len(parts) >= 2:
-                            port_info["processes"].append({
-                                "name": parts[0],
-                                "pid": parts[1],
-                            })
+                            port_info["processes"].append(
+                                {
+                                    "name": parts[0],
+                                    "pid": parts[1],
+                                }
+                            )
             elif _command_exists("fuser"):
-                cmd = ["fuser", f"{port}/{protocol}"]
+                cmd = ["/bin/fuser", f"{port}/{protocol}"]
                 process = subprocess.run(
                     cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
                 )
@@ -228,14 +234,16 @@ def _check_port(port, protocol="tcp", address="any"):
                                 # Get process name from /proc
                                 with open(f"/proc/{pid}/comm", "r") as f:
                                     name = f.read().strip()
-                                    port_info["processes"].append({
-                                        "name": name,
-                                        "pid": pid,
-                                    })
+                                    port_info["processes"].append(
+                                        {
+                                            "name": name,
+                                            "pid": pid,
+                                        }
+                                    )
                             except Exception:
                                 port_info["processes"].append({"pid": pid})
 
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, socket.error) as e:
         logger.error(f"Error checking port {port}/{protocol}: {str(e)}")
 
     return port_info
@@ -245,10 +253,8 @@ def _command_exists(command):
     """Check if a command exists on the system."""
     try:
         subprocess.run(
-            ["which", command], 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE
+            ["/usr/bin/which", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         return True
-    except Exception:
+    except subprocess.SubprocessError:
         return False

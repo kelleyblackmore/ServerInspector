@@ -2,8 +2,10 @@
 SSH test runner for ServerInspect.
 """
 
-import os
 import logging
+import shlex
+import os
+
 import paramiko
 
 logger = logging.getLogger("serverinspect")
@@ -14,7 +16,7 @@ class SSHRunner:
     Runner that executes tests on a remote system via SSH.
     """
 
-    def __init__(self, host, username=None, key_file=None, password=None, port=22):
+    def __init__(self, host, username=None, key_file=None, password=None, port=22, auto_add_host_key=True, known_hosts_file=None):
         """
         Initialize the SSH runner.
 
@@ -24,12 +26,16 @@ class SSHRunner:
             key_file (str): Path to SSH key file
             password (str): SSH password
             port (int): SSH port
+            auto_add_host_key (bool): Whether to automatically add unknown host keys
+            known_hosts_file (str): Path to known_hosts file (default: ~/.ssh/known_hosts)
         """
         self.host = host
         self.username = username
         self.key_file = key_file
         self.password = password
         self.port = port
+        self.auto_add_host_key = auto_add_host_key
+        self.known_hosts_file = known_hosts_file or os.path.expanduser("~/.ssh/known_hosts")
         self.client = None
 
         logger.debug(f"Initializing SSH runner for {host}")
@@ -46,7 +52,17 @@ class SSHRunner:
         """
         try:
             self.client = paramiko.SSHClient()
-            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            # Use either AutoAddPolicy or load system host keys based on configuration
+            if self.auto_add_host_key:
+                # This is less secure but necessary for scanning unknown hosts
+                logger.debug("Using AutoAddPolicy for SSH host key verification")
+                self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # nosec B507
+            else:
+                # More secure: load system host keys and reject unknown hosts
+                logger.debug(f"Using system host keys from {self.known_hosts_file}")
+                self.client.load_system_host_keys(self.known_hosts_file)
+                self.client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
             connect_kwargs = {"hostname": self.host, "port": self.port, "timeout": 10}
 
@@ -84,6 +100,13 @@ class SSHRunner:
 
         logger.debug(f"Running command over SSH: {command}")
 
+        # Validate command type
+        if not isinstance(command, str):
+            raise TypeError("Command must be a string")
+            
+        # Sanitize the command to prevent shell injection
+        command = shlex.quote(command)
+
         stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
 
@@ -108,6 +131,13 @@ class SSHRunner:
             self.connect()
 
         logger.debug(f"Running command with status over SSH: {command}")
+
+        # Validate command type
+        if not isinstance(command, str):
+            raise TypeError("Command must be a string")
+            
+        # Sanitize the command to prevent shell injection
+        command = shlex.quote(command)
 
         stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
@@ -207,9 +237,9 @@ class SSHRunner:
 
         # If we get here, we couldn't check the service
         if not result["error"]:
-            result["error"] = (
-                "Could not determine service status (no systemctl or service command found)"
-            )
+            result[
+                "error"
+            ] = "Could not determine service status (no systemctl or service command found)"
 
         return result
 
@@ -270,53 +300,40 @@ class SSHRunner:
 
         # If we get here, we couldn't check the package
         if not result["error"]:
-            result["error"] = (
-                "Could not determine package status (no supported package manager found)"
-            )
+            result[
+                "error"
+            ] = "Could not determine package status (no supported package manager found)"
 
         return result
 
     def process_status(self, process_name):
         """
-        Check if a process is running on the remote system.
-
-        Args:
-            process_name (str): Name of the process
-
-        Returns:
-            dict: Process status information
+        Get the process status on the remote machine.
+        Checks if the process is running.
         """
-        result = {"running": False, "count": 0, "error": None}
-
         try:
-            # Use pgrep if available
-            exit_code, _, _ = self.run_command_with_status("which pgrep")
-            if exit_code == 0:
-                exit_code, stdout, _ = self.run_command_with_status(
-                    f"pgrep -f {process_name} | wc -l"
-                )
-                if exit_code == 0:
-                    result["count"] = int(stdout.strip())
-                    result["running"] = result["count"] > 0
-            else:
-                # Fall back to ps and grep
-                exit_code, stdout, _ = self.run_command_with_status(
-                    f"ps aux | grep -v grep | grep {process_name} | wc -l"
-                )
-                if exit_code == 0:
-                    result["count"] = int(stdout.strip())
-                    result["running"] = result["count"] > 0
-        except Exception as e:
-            result["error"] = str(e)
-            logger.debug(f"Error checking process: {str(e)}")
+            count = 0
+            process_check_output = self.run_command(f"pgrep -c '{process_name}'")
 
-        return result
+            if process_check_output:
+                count = int(process_check_output.strip())
+
+            logger.debug(f"Found {count} instances of {process_name} running")
+            return count > 0, f"{count} instance(s) running"
+        except ValueError as e:
+            # Handle case where output couldn't be converted to integer
+            logger.error(f"Error parsing process count: {str(e)}")
+            return False, f"Error checking process: {str(e)}"
+        except Exception as e:
+            # Handle other exceptions
+            logger.error(f"Error checking process status: {str(e)}")
+            return False, f"Error checking process: {str(e)}"
 
     def __del__(self):
-        """Clean up the SSH connection when the object is destroyed."""
-        if self.client:
-            try:
+        """Clean up resources when the object is garbage collected."""
+        try:
+            if hasattr(self, "client") and self.client:
                 self.client.close()
                 logger.debug(f"Closed SSH connection to {self.host}")
-            except:
-                pass
+        except BaseException as e:
+            logger.error(f"Error closing SSH connection: {str(e)}")

@@ -1,0 +1,136 @@
+
+---
+# Ubuntu Server Baseline Configuration
+title: Ubuntu Server Baseline
+description: Essential tests for validating Ubuntu server configuration and health
+
+# Test definitions
+tests:
+  # Critical System Files
+  - name: Check if /etc/passwd has correct permissions
+    type: file
+    path: /etc/passwd
+    exists: true
+    permissions: "644"
+    owner: root
+
+  - name: Check if /etc/shadow has secure permissions
+    type: file
+    path: /etc/shadow
+    exists: true
+    permissions: "640"
+    owner: root
+    group: shadow
+
+  - name: Check if /etc/sudoers has correct permissions
+    type: file
+    path: /etc/sudoers
+    exists: true
+    permissions: "440"
+    owner: root
+
+  # Essential Directories
+  - name: Check if /var/log exists
+    type: directory
+    path: /var/log
+    exists: true
+    permissions: "755"
+
+  # Critical Services
+  - name: Check if sshd service is running
+    type: service
+    service: ssh
+    running: true
+    enabled: true
+
+  - name: Check if cron service is running
+    type: service
+    service: cron
+    running: true
+    enabled: true
+
+  # Essential Packages
+  - name: Check if essential security packages are installed
+    type: package
+    package: ufw
+    installed: true
+
+  - name: Check if curl is installed
+    type: package
+    package: curl
+    installed: true
+
+  - name: Check if ca-certificates is installed
+    type: package
+    package: ca-certificates
+    installed: true
+
+  # Security Checks
+  - name: Check if UFW is enabled
+    type: command
+    command: ufw status
+    exit_code: 0
+    stdout_contains: "Status: active"
+
+  - name: Check if root login is disabled in SSH
+    type: file
+    path: /etc/ssh/sshd_config
+    exists: true
+    contains: "PermitRootLogin no"
+
+  # System Processes
+  - name: Check if sshd process is running
+    type: process
+    process_name: sshd
+    running: true
+
+  - name: Check if system logger is running
+    type: process
+    process_name: rsyslog
+    running: true
+
+  # Network Configuration
+  - name: Check if localhost resolves correctly
+    type: command
+    command: getent hosts localhost
+    exit_code: 0
+    stdout_contains: "127.0.0.1"
+
+  - name: Check if DNS resolution works
+    type: command
+    command: nslookup ubuntu.com
+    exit_code: 0
+
+  - name: Check if loopback interface is active
+    type: command
+    command: ip addr show lo
+    exit_code: 0
+    stdout_contains: "state UP"
+
+  # System Performance/Resources
+  - name: Check available disk space on root
+    type: command
+    command: df -h / | awk 'NR==2 {print $5}'
+    exit_code: 0
+    # This checks if disk usage is less than 90%
+    stdout_pattern: "^([0-8][0-9]|90)%$"
+
+
+  # Update Status
+  - name: Check if apt repository information is current
+    type: command
+    command: find /var/lib/apt/lists -type f -mtime -7 | wc -l
+    exit_code: 0
+    # Check that at least some repository files were updated in the last week
+    stdout_pattern: "^[1-9][0-9]*$"
+
+  # Critical Configuration
+  - name: Check hostname is properly configured
+    type: file
+    path: /etc/hostname
+    exists: true
+
+  - name: Check timezone is configured
+    type: command
+    command: timedatectl status
+    exit_code: 0

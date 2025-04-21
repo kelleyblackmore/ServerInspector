@@ -17,13 +17,13 @@ tests:
     type: "port"
     port: "{{ test_port }}"
     listening: false
-    
+
   - name: "Check file with variable"
     type: "file"
     path: "{{ test_file }}"
     exists: false
-    
+
   - name: "Check process with variable"
     type: "process"
     process_name: "{{ test_process }}"
-    running: true 
+    running: true

@@ -42,7 +42,7 @@ check_status "Building Linux executable"
 if [ ! -f "dist/serverinspect-linux-x86_64" ]; then
     echo -e "${RED}❌ Error: Linux executable not found at dist/serverinspect-linux-x86_64${NC}"
     echo -e "${YELLOW}Checking for alternative locations...${NC}"
-    
+
     if [ -f "dist/serverinspect-linux" ]; then
         echo -e "${GREEN}Found executable at dist/serverinspect-linux${NC}"
         echo -e "${YELLOW}Copying to expected location...${NC}"
@@ -83,7 +83,7 @@ serverinspect check command "echo Hello World" --contains "Hello" || echo -e "${
 if [ -f "serverinspect-test.yaml" ]; then
     echo -e "${YELLOW}=== Running test configuration ===${NC}"
     serverinspect run serverinspect-test.yaml || echo -e "${YELLOW}Run command failed, trying fallback${NC}"
-    
+
     # Try alternative format if the first one fails
     if [ $? -ne 0 ]; then
         echo -e "${YELLOW}Trying alternative command format...${NC}"
@@ -103,4 +103,4 @@ echo "  serverinspect check file /etc --exists"
 echo "  serverinspect check command 'echo hello' --contains hello"
 echo "  serverinspect run serverinspect-test.yaml"
 echo ""
-echo -e "${YELLOW}To uninstall, run: sudo make uninstall-linux${NC}" 
+echo -e "${YELLOW}To uninstall, run: sudo make uninstall-linux${NC}"

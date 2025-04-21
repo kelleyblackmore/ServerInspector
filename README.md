@@ -131,13 +131,13 @@ tests:
     type: file
     path: /etc/hosts
     exists: true
-    
+
   - name: Check if sshd service is running
     type: service
     service: sshd
     running: true
     enabled: true
-    
+
   - name: Check if date command works
     type: command
     command: date

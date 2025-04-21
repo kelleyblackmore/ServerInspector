@@ -2,21 +2,20 @@
 Command-line interface for ServerInspect.
 """
 
+import logging
 import os
 import sys
-import logging
-from pathlib import Path
 
 import click
 from rich.console import Console
 from rich.logging import RichHandler
 
-from serverinspect.core import ServerInspect
 from serverinspect.config import load_config
+from serverinspect.core import ServerInspect
 
 # Import modules that might not be available (they'll be handled properly inside the functions)
 try:
-    from serverinspect.checkers import get_checker
+    pass
 except ImportError:
     pass  # This will be handled in the check function
 
@@ -152,19 +151,19 @@ tests:
     type: package
     package: nginx
     installed: true
-    
+
   - name: Check if nginx service is running
     type: service
     service: nginx
     running: true
     enabled: true
-    
+
   - name: Check if web directory exists
     type: file
     path: /var/www/html
     exists: true
     type: directory
-    
+
   - name: Check nginx configuration syntax
     type: command
     command: nginx -t

@@ -4,10 +4,10 @@ Process checker module for ServerInspect.
 This module provides simple functions to check process-related aspects of a system.
 """
 
-import subprocess
 import logging
 import re
 import shutil
+import subprocess
 
 logger = logging.getLogger("serverinspect")
 
@@ -51,7 +51,9 @@ def check(params):
             if expected_running:
                 result["message"] = f"Process '{process_name}' is not running"
             else:
-                result["message"] = f"Process '{process_name}' is running but should not be"
+                result[
+                    "message"
+                ] = f"Process '{process_name}' is running but should not be"
             return result
 
     # If we're checking that process should not be running and it's not
@@ -68,7 +70,9 @@ def check(params):
             result["details"]["min_count"] = min_count
 
             if process_info["count"] < min_count:
-                result["message"] = f"Process '{process_name}' has {process_info['count']} instances, expected at least {min_count}"
+                result[
+                    "message"
+                ] = f"Process '{process_name}' has {process_info['count']} instances, expected at least {min_count}"
                 return result
 
         # Check maximum instance count if specified
@@ -77,16 +81,22 @@ def check(params):
             result["details"]["max_count"] = max_count
 
             if process_info["count"] > max_count:
-                result["message"] = f"Process '{process_name}' has {process_info['count']} instances, expected at most {max_count}"
+                result[
+                    "message"
+                ] = f"Process '{process_name}' has {process_info['count']} instances, expected at most {max_count}"
                 return result
 
         # All checks passed
         result["success"] = True
-        result["message"] = f"Process '{process_name}' passed all checks (running with {process_info['count']} instances)"
+        result[
+            "message"
+        ] = f"Process '{process_name}' passed all checks (running with {process_info['count']} instances)"
     else:
         # Process not running, but that was expected or not specified
         result["success"] = True
-        result["message"] = f"Process '{process_name}' is not running (as expected or not specified)"
+        result[
+            "message"
+        ] = f"Process '{process_name}' is not running (as expected or not specified)"
 
     return result
 
@@ -104,13 +114,13 @@ def run(runner, test_config):
     """
     # Convert parameters to the new format
     params = {}
-    
+
     # Support both process_name and process parameters
     if "process_name" in test_config:
         params["process_name"] = test_config["process_name"]
     elif "process" in test_config:
         params["process_name"] = test_config["process"]
-    
+
     # Copy other parameters
     if "running" in test_config:
         params["running"] = test_config["running"]
@@ -120,22 +130,22 @@ def run(runner, test_config):
         params["max_count"] = test_config["max_count"]
     if "command_pattern" in test_config:
         params["command_pattern"] = test_config["command_pattern"]
-    
+
     # Run the check
     result = check(params)
-    
+
     # Convert the result back to the old format
     old_result = {
         "name": test_config.get("name", "Unnamed process test"),
         "type": "process",
         "result": result["success"],
-        "details": result["details"]
+        "details": result["details"],
     }
-    
+
     # Add error message if check failed
     if not result["success"]:
         old_result["details"]["error"] = result["message"]
-    
+
     return old_result
 
 
@@ -157,23 +167,23 @@ def _get_process_info(process_name, command_pattern=None):
         if shutil.which("pgrep"):
             # Get PIDs using pgrep
             proc = subprocess.run(
-                ["pgrep", "-f", process_name],
+                ["/usr/bin/pgrep", "-f", process_name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            
+
             if proc.returncode == 0:
-                pids = proc.stdout.strip().split('\n')
+                pids = proc.stdout.strip().split("\n")
                 process_info["running"] = True
                 process_info["count"] = len(pids)
                 process_info["pids"] = pids
-                
+
                 # Get command lines for each PID
                 for pid in pids:
                     try:
                         cmd_proc = subprocess.run(
-                            ["ps", "-p", pid, "-o", "cmd="],
+                            ["/bin/ps", "-p", pid, "-o", "cmd="],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             text=True,
@@ -181,52 +191,49 @@ def _get_process_info(process_name, command_pattern=None):
                         if cmd_proc.returncode == 0:
                             cmd = cmd_proc.stdout.strip()
                             process_info["commands"].append(cmd)
-                            
+
                             # If command pattern is specified, check if it matches
                             if command_pattern and not re.search(command_pattern, cmd):
                                 # Remove this PID if command doesn't match the pattern
                                 process_info["count"] -= 1
                                 process_info["pids"].remove(pid)
-                    except Exception as e:
+                    except (subprocess.SubprocessError, ValueError) as e:
                         logger.error(f"Error getting command for PID {pid}: {str(e)}")
-                
+
                 # Update running status based on final count
                 process_info["running"] = process_info["count"] > 0
-        
+
         # Fall back to ps if pgrep is not available
         elif shutil.which("ps"):
             proc = subprocess.run(
-                ["ps", "-eo", "pid,comm,cmd"],
+                ["/bin/ps", "-eo", "pid,comm,cmd"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            
+
             if proc.returncode == 0:
-                lines = proc.stdout.strip().split('\n')[1:]  # Skip header
+                lines = proc.stdout.strip().split("\n")[1:]  # Skip header
                 matching_processes = []
-                
+
                 for line in lines:
                     if process_name in line:
                         parts = line.strip().split(None, 2)
                         if len(parts) >= 3:
                             pid, comm, cmd = parts
-                            
+
                             # If command pattern is specified, check if it matches
                             if command_pattern and not re.search(command_pattern, cmd):
                                 continue
-                                
-                            matching_processes.append({
-                                "pid": pid,
-                                "command": cmd
-                            })
+
+                            matching_processes.append({"pid": pid, "command": cmd})
                             process_info["pids"].append(pid)
                             process_info["commands"].append(cmd)
-                
+
                 process_info["count"] = len(matching_processes)
                 process_info["running"] = process_info["count"] > 0
-    
-    except Exception as e:
+
+    except (subprocess.SubprocessError, OSError) as e:
         logger.error(f"Error checking process '{process_name}': {str(e)}")
 
     return process_info

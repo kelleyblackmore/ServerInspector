@@ -2,11 +2,11 @@
 Configuration loading and validation for ServerInspect.
 """
 
-import os
-import re
-import yaml
 import logging
+import re
 from pathlib import Path
+
+import yaml
 
 logger = logging.getLogger("serverinspect")
 

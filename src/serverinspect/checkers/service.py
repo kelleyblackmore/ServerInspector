@@ -5,8 +5,8 @@ This module provides simple functions to check service-related aspects of a syst
 """
 
 import logging
-import subprocess
 import shutil
+import subprocess
 
 logger = logging.getLogger("serverinspect")
 
@@ -52,7 +52,9 @@ def check(params):
             if expected_running:
                 result["message"] = f"Service '{service_name}' is not running"
             else:
-                result["message"] = f"Service '{service_name}' is running but should not be"
+                result[
+                    "message"
+                ] = f"Service '{service_name}' is running but should not be"
             return result
 
     # Check if the service is enabled
@@ -64,7 +66,9 @@ def check(params):
             if expected_enabled:
                 result["message"] = f"Service '{service_name}' is not enabled"
             else:
-                result["message"] = f"Service '{service_name}' is enabled but should not be"
+                result[
+                    "message"
+                ] = f"Service '{service_name}' is enabled but should not be"
             return result
 
     # If we've made it this far, all checks have passed
@@ -86,31 +90,29 @@ def run(runner, test_config):
         dict: Test result in the old format
     """
     # Convert parameters to the new format
-    params = {
-        "service": test_config.get("service")
-    }
-    
+    params = {"service": test_config.get("service")}
+
     # Copy other parameters
     if "running" in test_config:
         params["running"] = test_config["running"]
     if "enabled" in test_config:
         params["enabled"] = test_config["enabled"]
-    
+
     # Run the check
     result = check(params)
-    
+
     # Convert the result back to the old format
     old_result = {
         "name": test_config.get("name", "Unnamed service test"),
         "type": "service",
         "result": result["success"],
-        "details": result["details"]
+        "details": result["details"],
     }
-    
+
     # Add error message if check failed
     if not result["success"]:
         old_result["details"]["error"] = result["message"]
-    
+
     return old_result
 
 
@@ -132,31 +134,37 @@ def _get_service_status(service_name):
         try:
             # Check if service exists
             proc = subprocess.run(
-                ["systemctl", "list-unit-files", f"{service_name}.service"],
+                ["/usr/bin/systemctl", "list-unit-files", f"{service_name}.service"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            service_info["exists"] = proc.returncode == 0 and f"{service_name}.service" in proc.stdout
+            service_info["exists"] = (
+                proc.returncode == 0 and f"{service_name}.service" in proc.stdout
+            )
 
             if service_info["exists"]:
                 # Check if service is running
                 proc = subprocess.run(
-                    ["systemctl", "is-active", f"{service_name}.service"],
+                    ["/usr/bin/systemctl", "is-active", f"{service_name}.service"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
                 )
-                service_info["running"] = proc.returncode == 0 and proc.stdout.strip() == "active"
+                service_info["running"] = (
+                    proc.returncode == 0 and proc.stdout.strip() == "active"
+                )
 
                 # Check if service is enabled
                 proc = subprocess.run(
-                    ["systemctl", "is-enabled", f"{service_name}.service"],
+                    ["/usr/bin/systemctl", "is-enabled", f"{service_name}.service"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
                 )
-                service_info["enabled"] = proc.returncode == 0 and proc.stdout.strip() == "enabled"
+                service_info["enabled"] = (
+                    proc.returncode == 0 and proc.stdout.strip() == "enabled"
+                )
         except Exception as e:
             logger.error(f"Error getting systemd service status: {str(e)}")
     elif shutil.which("service"):
@@ -164,27 +172,31 @@ def _get_service_status(service_name):
         try:
             # Check if service exists
             proc = subprocess.run(
-                ["service", "--status-all"],
+                ["/usr/sbin/service", "--status-all"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
             output = proc.stdout + proc.stderr
-            service_info["exists"] = any(line.endswith(f" {service_name}") for line in output.split("\n"))
+            service_info["exists"] = any(
+                line.endswith(f" {service_name}") for line in output.split("\n")
+            )
 
             if service_info["exists"]:
                 # Check if service is running
                 proc = subprocess.run(
-                    ["service", service_name, "status"],
+                    ["/usr/sbin/service", service_name, "status"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
                 )
-                service_info["running"] = proc.returncode == 0 and "running" in proc.stdout.lower()
+                service_info["running"] = (
+                    proc.returncode == 0 and "running" in proc.stdout.lower()
+                )
 
                 # Check if service is enabled (we check for symlinks in /etc/rc*.d)
                 proc = subprocess.run(
-                    ["find", "/etc/rc*.d", "-name", f"S*{service_name}"],
+                    ["/usr/bin/find", "/etc/rc*.d", "-name", f"S*{service_name}"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,

@@ -23,12 +23,13 @@ def get_checker(checker_type):
     checker_map = {
         "file": "serverinspect.checkers.file",
         "directory": "serverinspect.checkers.file",  # Map directory type to file module
-        "symlink": "serverinspect.checkers.file",    # Map symlink type to file module
+        "symlink": "serverinspect.checkers.file",  # Map symlink type to file module
         "command": "serverinspect.checkers.command",
         "service": "serverinspect.checkers.service",
         "process": "serverinspect.checkers.process",
         "package": "serverinspect.checkers.package",
         "port": "serverinspect.checkers.port",
+        "config": "serverinspect.checkers.config",  # Add our new config checker
     }
 
     if checker_type not in checker_map:

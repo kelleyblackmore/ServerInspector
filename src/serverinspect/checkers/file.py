@@ -4,9 +4,9 @@ File checker module for ServerInspect.
 This module provides simple functions to check file-related aspects of a system.
 """
 
+import logging
 import os
 import re
-import logging
 
 logger = logging.getLogger("serverinspect")
 
@@ -67,7 +67,7 @@ def check(params):
         if "type" in params:
             expected_type = params["type"]
             result["details"]["expected_type"] = expected_type
-            
+
             # Get file type
             actual_type = "unknown"
             if os.path.isfile(path):
@@ -76,18 +76,22 @@ def check(params):
                 actual_type = "directory"
             elif os.path.islink(path):
                 actual_type = "symlink"
-                
+
             result["details"]["actual_type"] = actual_type
-            
+
             if actual_type != expected_type:
-                result["message"] = f"File '{path}' is a '{actual_type}' but should be a '{expected_type}'"
+                result[
+                    "message"
+                ] = f"File '{path}' is a '{actual_type}' but should be a '{expected_type}'"
                 return result
 
         # Get file type for other checks
         file_type = (
             "file"
             if os.path.isfile(path)
-            else "directory" if os.path.isdir(path) else "other"
+            else "directory"
+            if os.path.isdir(path)
+            else "other"
         )
         result["details"]["type"] = file_type
 
@@ -100,9 +104,9 @@ def check(params):
                 has_content = expected_content in content
                 result["details"]["has_content"] = has_content
                 if not has_content:
-                    result["message"] = (
-                        f"File '{path}' does not contain '{expected_content}'"
-                    )
+                    result[
+                        "message"
+                    ] = f"File '{path}' does not contain '{expected_content}'"
                     return result
             except Exception as e:
                 result["message"] = f"Error reading file '{path}': {str(e)}"
@@ -117,9 +121,9 @@ def check(params):
                 pattern_match = bool(re.search(pattern, content))
                 result["details"]["pattern_match"] = pattern_match
                 if not pattern_match:
-                    result["message"] = (
-                        f"File '{path}' does not match pattern '{pattern}'"
-                    )
+                    result[
+                        "message"
+                    ] = f"File '{path}' does not match pattern '{pattern}'"
                     return result
             except Exception as e:
                 result["message"] = f"Error reading file '{path}': {str(e)}"
@@ -136,7 +140,9 @@ def check(params):
                 result["details"]["actual_permissions"] = actual_perms
 
                 if actual_perms != expected_perms:
-                    result["message"] = f"File '{path}' has permissions {actual_perms}, expected {expected_perms}"
+                    result[
+                        "message"
+                    ] = f"File '{path}' has permissions {actual_perms}, expected {expected_perms}"
                     return result
             except Exception as e:
                 result["message"] = f"Error checking file permissions: {str(e)}"
@@ -145,6 +151,7 @@ def check(params):
         # Check file owner
         if "owner" in params:
             import pwd
+
             expected_owner = params["owner"]
             result["details"]["expected_owner"] = expected_owner
 
@@ -154,12 +161,16 @@ def check(params):
                 try:
                     actual_owner = pwd.getpwuid(owner_uid).pw_name
                 except KeyError:
-                    actual_owner = str(owner_uid)  # Fallback to UID if name not available
-                    
+                    actual_owner = str(
+                        owner_uid
+                    )  # Fallback to UID if name not available
+
                 result["details"]["actual_owner"] = actual_owner
 
                 if actual_owner != expected_owner:
-                    result["message"] = f"File '{path}' owned by {actual_owner}, expected {expected_owner}"
+                    result[
+                        "message"
+                    ] = f"File '{path}' owned by {actual_owner}, expected {expected_owner}"
                     return result
             except Exception as e:
                 result["message"] = f"Error checking file owner: {str(e)}"
@@ -168,6 +179,7 @@ def check(params):
         # Check file group
         if "group" in params:
             import grp
+
             expected_group = params["group"]
             result["details"]["expected_group"] = expected_group
 
@@ -177,12 +189,16 @@ def check(params):
                 try:
                     actual_group = grp.getgrgid(group_gid).gr_name
                 except KeyError:
-                    actual_group = str(group_gid)  # Fallback to GID if name not available
-                    
+                    actual_group = str(
+                        group_gid
+                    )  # Fallback to GID if name not available
+
                 result["details"]["actual_group"] = actual_group
 
                 if actual_group != expected_group:
-                    result["message"] = f"File '{path}' has group {actual_group}, expected {expected_group}"
+                    result[
+                        "message"
+                    ] = f"File '{path}' has group {actual_group}, expected {expected_group}"
                     return result
             except Exception as e:
                 result["message"] = f"Error checking file group: {str(e)}"
@@ -207,15 +223,13 @@ def run(runner, test_config):
         dict: Test result in the old format
     """
     # Convert parameters to the new format
-    params = {
-        "path": test_config.get("path")
-    }
-    
+    params = {"path": test_config.get("path")}
+
     # Set the expected type based on the test type
     test_type = test_config.get("type", "file")
     if test_type in ["directory", "symlink"]:
         params["type"] = test_type
-    
+
     # Copy other parameters
     if "exists" in test_config:
         params["exists"] = test_config["exists"]
@@ -231,20 +245,20 @@ def run(runner, test_config):
         params["owner"] = test_config["owner"]
     if "group" in test_config:
         params["group"] = test_config["group"]
-    
+
     # Run the check
     result = check(params)
-    
+
     # Convert the result back to the old format
     old_result = {
         "name": test_config.get("name", "Unnamed file test"),
         "type": test_type,
         "result": result["success"],
-        "details": result["details"]
+        "details": result["details"],
     }
-    
+
     # Add error message if check failed
     if not result["success"]:
         old_result["details"]["error"] = result["message"]
-    
+
     return old_result

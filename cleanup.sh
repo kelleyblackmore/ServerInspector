@@ -56,4 +56,4 @@ rm -f uv.lock
 echo "✅ Cleanup complete!"
 echo ""
 echo "NOTE: If you want to keep some of these files, you should edit this script"
-echo "      before running it again, or restore them from version control." 
+echo "      before running it again, or restore them from version control."

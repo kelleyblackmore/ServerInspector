@@ -12,7 +12,7 @@ tests:
     type: command
     command: uptime
     exit_status: 0
-  
+
   - name: Check if CPU load is reasonable
     type: command
     command: cat /proc/loadavg
@@ -20,7 +20,7 @@ tests:
     stdout:
       # Expect load average < 5, adjust as needed
       matches: "^\\d+\\.\\d+ \\d+\\.\\d+ \\d+\\.\\d+ "
-  
+
   - name: Check if disk space is sufficient
     type: command
     command: df -h / | grep -v Filesystem
@@ -28,23 +28,23 @@ tests:
     stdout:
       # Fail if usage > 90%
       matches: "\\s[0-8][0-9]%"
-  
+
   - name: Check if memory is sufficient
     type: command
     command: free -m | grep Mem
     exit_status: 0
-  
+
   - name: Check nginx installation
     type: package
     package: nginx
     installed: true
-  
+
   - name: Check if nginx service is running
     type: service
     service: nginx
     running: true
     enabled: true
-  
+
   - name: Check if nginx is accepting connections
     type: command
     command: curl -I http://localhost 2>/dev/null || wget -q --spider --timeout=5 http://localhost

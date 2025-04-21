@@ -2,8 +2,10 @@
 YAML formatter for ServerInspect.
 """
 
-import yaml
 import logging
+
+import yaml
+
 from serverinspect.formatters.base import BaseFormatter
 
 logger = logging.getLogger("serverinspect")

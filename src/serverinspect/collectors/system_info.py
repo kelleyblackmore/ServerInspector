@@ -2,10 +2,8 @@
 System information collector for ServerInspect.
 """
 
-import os
-import platform
 import logging
-import socket
+import os
 from datetime import datetime
 
 logger = logging.getLogger("serverinspect")
@@ -91,45 +89,51 @@ def collect_network_info(runner):
         dict: Network information
     """
     network_info = {}
-    
+
     try:
         # Get hostname and IP information
         hostname = runner.run_command("hostname").strip()
         network_info["hostname"] = hostname
-        
+
         # Get IP addresses using ip command if available
         if runner.run_command("which ip 2>/dev/null || echo ''").strip():
             # Modern systems with 'ip' command
             # First get the list of interfaces
-            iface_list = runner.run_command("ip link show | grep -v 'link/' | grep -o '^[0-9]\\+: [^:]*' | cut -d' ' -f2").strip()
+            iface_list = runner.run_command(
+                "ip link show | grep -v 'link/' | grep -o '^[0-9]\\+: [^:]*' | cut -d' ' -f2"
+            ).strip()
             interfaces = []
-            
+
             # For each interface, get IP information
             for iface in iface_list.splitlines():
                 iface = iface.strip()
                 if not iface:
                     continue
-                    
+
                 # Get IPv4 addresses for this interface
-                ip_output = runner.run_command(f"ip -4 addr show {iface} | grep inet").strip()
+                ip_output = runner.run_command(
+                    f"ip -4 addr show {iface} | grep inet"
+                ).strip()
                 if ip_output:
                     for line in ip_output.splitlines():
                         parts = line.strip().split()
                         if len(parts) >= 2 and parts[0] == "inet":
                             ip_cidr = parts[1]
                             ip_parts = ip_cidr.split("/")
-                            interfaces.append({
-                                "interface": iface,
-                                "ip_address": ip_parts[0],
-                                "cidr": ip_cidr
-                            })
-            
+                            interfaces.append(
+                                {
+                                    "interface": iface,
+                                    "ip_address": ip_parts[0],
+                                    "cidr": ip_cidr,
+                                }
+                            )
+
             network_info["interfaces"] = interfaces
         elif runner.run_command("which ifconfig 2>/dev/null || echo ''").strip():
             # Older systems with 'ifconfig' command
             ifconfig_output = runner.run_command("ifconfig").strip()
             network_info["interfaces"] = parse_ifconfig_output(ifconfig_output)
-        
+
         # Get default gateway
         if runner.run_command("which ip 2>/dev/null || echo ''").strip():
             gateway_output = runner.run_command("ip route | grep default").strip()
@@ -137,7 +141,7 @@ def collect_network_info(runner):
                 parts = gateway_output.split()
                 if len(parts) >= 3:
                     network_info["default_gateway"] = parts[2]
-        
+
         # Get DNS servers
         if runner.file_exists("/etc/resolv.conf"):
             resolv_conf = runner.run_command("cat /etc/resolv.conf").strip()
@@ -149,15 +153,17 @@ def collect_network_info(runner):
                         dns_servers.append(parts[1])
             if dns_servers:
                 network_info["dns_servers"] = dns_servers
-        
+
         # Check connectivity
-        ping_result = runner.run_command("ping -c 1 -W 1 8.8.8.8 2>/dev/null || echo 'Failed'").strip()
+        ping_result = runner.run_command(
+            "ping -c 1 -W 1 8.8.8.8 2>/dev/null || echo 'Failed'"
+        ).strip()
         network_info["internet_connectivity"] = "Failed" not in ping_result
-        
+
     except Exception as e:
         logger.error(f"Error collecting network information: {str(e)}")
         network_info["error"] = str(e)
-    
+
     return network_info
 
 
@@ -172,7 +178,7 @@ def parse_ip_output(ip_output):
         list: List of interfaces with IP information
     """
     interfaces = []
-    
+
     # Process each line with an IP address
     for line in ip_output.splitlines():
         parts = line.strip().split()
@@ -183,10 +189,10 @@ def parse_ip_output(ip_output):
                 if "/" in part and part[0].isdigit():
                     ip_cidr = part
                     break
-            
+
             if not ip_cidr:
                 continue
-                
+
             # Try to extract interface name
             interface_name = "unknown"
             # The line should contain something like "inet 192.168.1.1/24 ... dev eth0"
@@ -195,7 +201,7 @@ def parse_ip_output(ip_output):
                 if part == "dev" and i + 1 < len(parts):
                     interface_name = parts[i + 1]
                     break
-            
+
             # If we couldn't find via dev, try a different approach - check for scope
             if interface_name == "unknown":
                 for i, part in enumerate(parts):
@@ -203,14 +209,16 @@ def parse_ip_output(ip_output):
                         # Interface might be before scope
                         interface_name = parts[i - 2]
                         break
-            
+
             ip_parts = ip_cidr.split("/")
-            interfaces.append({
-                "interface": interface_name,
-                "ip_address": ip_parts[0],
-                "cidr": ip_cidr
-            })
-    
+            interfaces.append(
+                {
+                    "interface": interface_name,
+                    "ip_address": ip_parts[0],
+                    "cidr": ip_cidr,
+                }
+            )
+
     return interfaces
 
 
@@ -226,7 +234,7 @@ def parse_ifconfig_output(ifconfig_output):
     """
     interfaces = []
     current_interface = None
-    
+
     lines = ifconfig_output.splitlines()
     for line in lines:
         line = line.strip()
@@ -244,7 +252,7 @@ def parse_ifconfig_output(ifconfig_output):
                     if ip_address:
                         interface_info = {
                             "interface": current_interface,
-                            "ip_address": ip_address
+                            "ip_address": ip_address,
                         }
                         # Look for netmask
                         for j, p in enumerate(parts):
@@ -253,7 +261,7 @@ def parse_ifconfig_output(ifconfig_output):
                                 break
                         interfaces.append(interface_info)
                     break
-    
+
     return interfaces
 
 
@@ -312,23 +320,20 @@ def collect_local_system_info():
             # Get network interfaces and stats
             net_io = psutil.net_io_counters(pernic=True)
             net_if_addrs = psutil.net_if_addrs()
-            
+
             interfaces = []
             for iface, addrs in net_if_addrs.items():
                 iface_info = {"interface": iface, "addresses": []}
-                
+
                 # Add addresses
                 for addr in addrs:
-                    addr_info = {
-                        "family": str(addr.family),
-                        "address": addr.address
-                    }
+                    addr_info = {"family": str(addr.family), "address": addr.address}
                     if addr.netmask:
                         addr_info["netmask"] = addr.netmask
                     if addr.broadcast:
                         addr_info["broadcast"] = addr.broadcast
                     iface_info["addresses"].append(addr_info)
-                
+
                 # Add IO statistics if available
                 if iface in net_io:
                     iface_stats = net_io[iface]
@@ -340,18 +345,15 @@ def collect_local_system_info():
                         "errin": iface_stats.errin,
                         "errout": iface_stats.errout,
                         "dropin": iface_stats.dropin,
-                        "dropout": iface_stats.dropout
+                        "dropout": iface_stats.dropout,
                     }
-                
+
                 interfaces.append(iface_info)
-            
-            info["network_detailed"] = {
-                "interfaces": interfaces
-            }
-            
+
+            info["network_detailed"] = {"interfaces": interfaces}
+
             # Add default network connection info
             try:
-                default_gateway = None
                 connections = psutil.net_connections()
                 info["network_detailed"]["connection_count"] = len(connections)
                 # Trying to get default gateway is complex with psutil, skipping for now

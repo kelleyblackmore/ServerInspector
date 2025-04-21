@@ -20,4 +20,4 @@ black .
 echo "Running isort formatter..."
 isort --profile black .
 
-echo "✅ Code formatting complete!" 
+echo "✅ Code formatting complete!"
