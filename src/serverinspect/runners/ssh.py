@@ -118,6 +118,7 @@ class SSHRunner:
             raise TypeError("Command must be a string")
 
         # Sanitize the command to prevent shell injection
+        # This is a security measure to prevent command injection attacks
         command = shlex.quote(command)
 
         stdin, stdout, stderr = self.client.exec_command(command)
