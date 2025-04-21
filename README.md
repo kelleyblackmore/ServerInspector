@@ -160,3 +160,8 @@ MIT
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Recent Updates
+
+- Enhanced SSH security with options for secure host key verification
+- Improved code linting configuration with Ruff and Bandit
