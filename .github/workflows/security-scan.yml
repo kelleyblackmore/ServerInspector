@@ -37,7 +37,7 @@ jobs:
 
       # Upload bandit scan results as an artifact
       - name: Upload bandit results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bandit-results
           path: bandit-results.json
