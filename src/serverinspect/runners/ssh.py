@@ -3,8 +3,8 @@ SSH test runner for ServerInspect.
 """
 
 import logging
-import shlex
 import os
+import shlex
 
 import paramiko
 
@@ -16,7 +16,16 @@ class SSHRunner:
     Runner that executes tests on a remote system via SSH.
     """
 
-    def __init__(self, host, username=None, key_file=None, password=None, port=22, auto_add_host_key=True, known_hosts_file=None):
+    def __init__(
+        self,
+        host,
+        username=None,
+        key_file=None,
+        password=None,
+        port=22,
+        auto_add_host_key=True,
+        known_hosts_file=None,
+    ):
         """
         Initialize the SSH runner.
 
@@ -35,7 +44,9 @@ class SSHRunner:
         self.password = password
         self.port = port
         self.auto_add_host_key = auto_add_host_key
-        self.known_hosts_file = known_hosts_file or os.path.expanduser("~/.ssh/known_hosts")
+        self.known_hosts_file = known_hosts_file or os.path.expanduser(
+            "~/.ssh/known_hosts"
+        )
         self.client = None
 
         logger.debug(f"Initializing SSH runner for {host}")
@@ -52,12 +63,14 @@ class SSHRunner:
         """
         try:
             self.client = paramiko.SSHClient()
-            
+
             # Use either AutoAddPolicy or load system host keys based on configuration
             if self.auto_add_host_key:
                 # This is less secure but necessary for scanning unknown hosts
                 logger.debug("Using AutoAddPolicy for SSH host key verification")
-                self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # nosec B507
+                self.client.set_missing_host_key_policy(
+                    paramiko.AutoAddPolicy()
+                )  # nosec B507
             else:
                 # More secure: load system host keys and reject unknown hosts
                 logger.debug(f"Using system host keys from {self.known_hosts_file}")
@@ -103,7 +116,7 @@ class SSHRunner:
         # Validate command type
         if not isinstance(command, str):
             raise TypeError("Command must be a string")
-            
+
         # Sanitize the command to prevent shell injection
         command = shlex.quote(command)
 
@@ -135,7 +148,7 @@ class SSHRunner:
         # Validate command type
         if not isinstance(command, str):
             raise TypeError("Command must be a string")
-            
+
         # Sanitize the command to prevent shell injection
         command = shlex.quote(command)
 
