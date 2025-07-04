@@ -52,9 +52,9 @@ def check(params):
             if expected_running:
                 result["message"] = f"Service '{service_name}' is not running"
             else:
-                result[
-                    "message"
-                ] = f"Service '{service_name}' is running but should not be"
+                result["message"] = (
+                    f"Service '{service_name}' is running but should not be"
+                )
             return result
 
     # Check if the service is enabled
@@ -66,9 +66,9 @@ def check(params):
             if expected_enabled:
                 result["message"] = f"Service '{service_name}' is not enabled"
             else:
-                result[
-                    "message"
-                ] = f"Service '{service_name}' is enabled but should not be"
+                result["message"] = (
+                    f"Service '{service_name}' is enabled but should not be"
+                )
             return result
 
     # If we've made it this far, all checks have passed

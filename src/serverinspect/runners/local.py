@@ -194,9 +194,9 @@ class LocalRunner:
 
         # If we get here, we couldn't check the service
         if not result["error"]:
-            result[
-                "error"
-            ] = "Could not determine service status (no systemctl or service command found)"
+            result["error"] = (
+                "Could not determine service status (no systemctl or service command found)"
+            )
 
         return result
 
@@ -259,9 +259,9 @@ class LocalRunner:
 
         # If we get here, we couldn't check the package
         if not result["error"]:
-            result[
-                "error"
-            ] = "Could not determine package status (no supported package manager found)"
+            result["error"] = (
+                "Could not determine package status (no supported package manager found)"
+            )
 
         return result
 

@@ -220,9 +220,9 @@ def check(params):
             str_expected = str(expected_value).strip()
 
             if str_value != str_expected:
-                result[
-                    "message"
-                ] = f"Value for '{key_path}' is '{str_value}', expected '{str_expected}'"
+                result["message"] = (
+                    f"Value for '{key_path}' is '{str_value}', expected '{str_expected}'"
+                )
                 return result
 
             result["details"][f"value_match_{key_path}"] = True
@@ -243,9 +243,9 @@ def check(params):
             )
             result["details"]["compare_format"] = compare_format
         except Exception as e:
-            result[
-                "message"
-            ] = f"Error parsing comparison file '{compare_path}': {str(e)}"
+            result["message"] = (
+                f"Error parsing comparison file '{compare_path}': {str(e)}"
+            )
             return result
 
         # Check specific keys to compare
@@ -261,9 +261,9 @@ def check(params):
                     mismatches.append(f"{key_path}: '{value1}' vs '{value2}'")
 
             if mismatches:
-                result[
-                    "message"
-                ] = f"Configuration files have {len(mismatches)} mismatched values"
+                result["message"] = (
+                    f"Configuration files have {len(mismatches)} mismatched values"
+                )
                 result["details"]["mismatches"] = mismatches
                 return result
 

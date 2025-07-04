@@ -80,18 +80,16 @@ def check(params):
             result["details"]["actual_type"] = actual_type
 
             if actual_type != expected_type:
-                result[
-                    "message"
-                ] = f"File '{path}' is a '{actual_type}' but should be a '{expected_type}'"
+                result["message"] = (
+                    f"File '{path}' is a '{actual_type}' but should be a '{expected_type}'"
+                )
                 return result
 
         # Get file type for other checks
         file_type = (
             "file"
             if os.path.isfile(path)
-            else "directory"
-            if os.path.isdir(path)
-            else "other"
+            else "directory" if os.path.isdir(path) else "other"
         )
         result["details"]["type"] = file_type
 
@@ -104,9 +102,9 @@ def check(params):
                 has_content = expected_content in content
                 result["details"]["has_content"] = has_content
                 if not has_content:
-                    result[
-                        "message"
-                    ] = f"File '{path}' does not contain '{expected_content}'"
+                    result["message"] = (
+                        f"File '{path}' does not contain '{expected_content}'"
+                    )
                     return result
             except Exception as e:
                 result["message"] = f"Error reading file '{path}': {str(e)}"
@@ -121,9 +119,9 @@ def check(params):
                 pattern_match = bool(re.search(pattern, content))
                 result["details"]["pattern_match"] = pattern_match
                 if not pattern_match:
-                    result[
-                        "message"
-                    ] = f"File '{path}' does not match pattern '{pattern}'"
+                    result["message"] = (
+                        f"File '{path}' does not match pattern '{pattern}'"
+                    )
                     return result
             except Exception as e:
                 result["message"] = f"Error reading file '{path}': {str(e)}"
@@ -140,9 +138,9 @@ def check(params):
                 result["details"]["actual_permissions"] = actual_perms
 
                 if actual_perms != expected_perms:
-                    result[
-                        "message"
-                    ] = f"File '{path}' has permissions {actual_perms}, expected {expected_perms}"
+                    result["message"] = (
+                        f"File '{path}' has permissions {actual_perms}, expected {expected_perms}"
+                    )
                     return result
             except Exception as e:
                 result["message"] = f"Error checking file permissions: {str(e)}"
@@ -168,9 +166,9 @@ def check(params):
                 result["details"]["actual_owner"] = actual_owner
 
                 if actual_owner != expected_owner:
-                    result[
-                        "message"
-                    ] = f"File '{path}' owned by {actual_owner}, expected {expected_owner}"
+                    result["message"] = (
+                        f"File '{path}' owned by {actual_owner}, expected {expected_owner}"
+                    )
                     return result
             except Exception as e:
                 result["message"] = f"Error checking file owner: {str(e)}"
@@ -196,9 +194,9 @@ def check(params):
                 result["details"]["actual_group"] = actual_group
 
                 if actual_group != expected_group:
-                    result[
-                        "message"
-                    ] = f"File '{path}' has group {actual_group}, expected {expected_group}"
+                    result["message"] = (
+                        f"File '{path}' has group {actual_group}, expected {expected_group}"
+                    )
                     return result
             except Exception as e:
                 result["message"] = f"Error checking file group: {str(e)}"
