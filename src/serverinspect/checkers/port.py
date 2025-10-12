@@ -70,9 +70,9 @@ def check(params):
             if expected_listening:
                 result["message"] = f"Port {port}/{protocol} is not listening"
             else:
-                result[
-                    "message"
-                ] = f"Port {port}/{protocol} is listening but should not be"
+                result["message"] = (
+                    f"Port {port}/{protocol} is listening but should not be"
+                )
             return result
 
     # All checks passed

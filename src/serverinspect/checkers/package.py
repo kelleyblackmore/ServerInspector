@@ -47,9 +47,9 @@ def check(params):
             if expected_installed:
                 result["message"] = f"Package '{package_name}' is not installed"
             else:
-                result[
-                    "message"
-                ] = f"Package '{package_name}' is installed but should not be"
+                result["message"] = (
+                    f"Package '{package_name}' is installed but should not be"
+                )
             return result
 
     # If we're checking that package should not be installed and it's not
@@ -65,9 +65,9 @@ def check(params):
         result["details"]["expected_version"] = expected_version
 
         if expected_version != actual_version:
-            result[
-                "message"
-            ] = f"Package '{package_name}' version is {actual_version}, expected {expected_version}"
+            result["message"] = (
+                f"Package '{package_name}' version is {actual_version}, expected {expected_version}"
+            )
             return result
 
     # All checks passed

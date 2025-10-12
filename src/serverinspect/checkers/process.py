@@ -51,9 +51,9 @@ def check(params):
             if expected_running:
                 result["message"] = f"Process '{process_name}' is not running"
             else:
-                result[
-                    "message"
-                ] = f"Process '{process_name}' is running but should not be"
+                result["message"] = (
+                    f"Process '{process_name}' is running but should not be"
+                )
             return result
 
     # If we're checking that process should not be running and it's not
@@ -70,9 +70,9 @@ def check(params):
             result["details"]["min_count"] = min_count
 
             if process_info["count"] < min_count:
-                result[
-                    "message"
-                ] = f"Process '{process_name}' has {process_info['count']} instances, expected at least {min_count}"
+                result["message"] = (
+                    f"Process '{process_name}' has {process_info['count']} instances, expected at least {min_count}"
+                )
                 return result
 
         # Check maximum instance count if specified
@@ -81,22 +81,22 @@ def check(params):
             result["details"]["max_count"] = max_count
 
             if process_info["count"] > max_count:
-                result[
-                    "message"
-                ] = f"Process '{process_name}' has {process_info['count']} instances, expected at most {max_count}"
+                result["message"] = (
+                    f"Process '{process_name}' has {process_info['count']} instances, expected at most {max_count}"
+                )
                 return result
 
         # All checks passed
         result["success"] = True
-        result[
-            "message"
-        ] = f"Process '{process_name}' passed all checks (running with {process_info['count']} instances)"
+        result["message"] = (
+            f"Process '{process_name}' passed all checks (running with {process_info['count']} instances)"
+        )
     else:
         # Process not running, but that was expected or not specified
         result["success"] = True
-        result[
-            "message"
-        ] = f"Process '{process_name}' is not running (as expected or not specified)"
+        result["message"] = (
+            f"Process '{process_name}' is not running (as expected or not specified)"
+        )
 
     return result
 

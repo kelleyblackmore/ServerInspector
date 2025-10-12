@@ -80,9 +80,9 @@ def check(params):
             result["details"]["expected_exit_code"] = expected_exit_code
 
             if exit_code != expected_exit_code:
-                result[
-                    "message"
-                ] = f"Command exited with code {exit_code}, expected {expected_exit_code}"
+                result["message"] = (
+                    f"Command exited with code {exit_code}, expected {expected_exit_code}"
+                )
                 return result
 
         # Check stdout content if specified
@@ -91,9 +91,9 @@ def check(params):
             result["details"]["expected_stdout_contains"] = expected_content
 
             if expected_content not in stdout:
-                result[
-                    "message"
-                ] = f"Command stdout does not contain: {expected_content}"
+                result["message"] = (
+                    f"Command stdout does not contain: {expected_content}"
+                )
                 return result
 
         # Check stdout pattern if specified
@@ -111,9 +111,9 @@ def check(params):
             result["details"]["expected_stderr_contains"] = expected_content
 
             if expected_content not in stderr:
-                result[
-                    "message"
-                ] = f"Command stderr does not contain: {expected_content}"
+                result["message"] = (
+                    f"Command stderr does not contain: {expected_content}"
+                )
                 return result
 
         # Check stderr pattern if specified
