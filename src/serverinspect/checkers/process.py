@@ -101,12 +101,12 @@ def check(params):
     return result
 
 
-def run(runner, test_config):
+def run(_runner, test_config):
     """
     Run a process test (legacy API for backward compatibility).
 
     Args:
-        runner: A runner instance
+        _runner: A runner instance (unused, kept for API compatibility)
         test_config (dict): Test configuration
 
     Returns:
@@ -220,7 +220,7 @@ def _get_process_info(process_name, command_pattern=None):
                     if process_name in line:
                         parts = line.strip().split(None, 2)
                         if len(parts) >= 3:
-                            pid, comm, cmd = parts
+                            pid, _comm, cmd = parts
 
                             # If command pattern is specified, check if it matches
                             if command_pattern and not re.search(command_pattern, cmd):

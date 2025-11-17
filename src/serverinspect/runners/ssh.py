@@ -123,7 +123,7 @@ class SSHRunner(BaseRunner):
         # This is a security measure to prevent command injection attacks
         command = shlex.quote(command)
 
-        stdin, stdout, stderr = self.client.exec_command(command)
+        _stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
 
         if exit_status != 0:
@@ -155,7 +155,7 @@ class SSHRunner(BaseRunner):
         # Sanitize the command to prevent shell injection
         command = shlex.quote(command)
 
-        stdin, stdout, stderr = self.client.exec_command(command)
+        _stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
 
         return (

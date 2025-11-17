@@ -281,12 +281,12 @@ def check(params):
     return result
 
 
-def run(runner, test_config):
+def run(_runner, test_config):
     """
     Run a configuration file test (legacy API for backward compatibility).
 
     Args:
-        runner: A runner instance
+        _runner: A runner instance (unused, kept for API compatibility)
         test_config (dict): Test configuration
 
     Returns:

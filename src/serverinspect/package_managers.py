@@ -52,7 +52,7 @@ class PackageManager:
             Tuple of (installed: bool, version: Optional[str])
         """
         cmd = self.check_cmd.format(package=package_name)
-        exit_code, stdout, stderr = runner.run_command_with_status(cmd)
+        exit_code, stdout, _stderr = runner.run_command_with_status(cmd)
 
         installed = exit_code == 0
         version = None
