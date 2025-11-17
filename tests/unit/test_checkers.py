@@ -2,7 +2,6 @@
 Unit tests for checker modules
 """
 import pytest
-from unittest.mock import Mock, MagicMock, patch
 
 from serverinspect.checkers import get_checker
 

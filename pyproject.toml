@@ -53,6 +53,8 @@ packages = [
 [tool.ruff]
 # Set a specific line length
 line-length = 100
+
+[tool.ruff.lint]
 # Ignore E501 (line too long) for specific file patterns
 per-file-ignores = { "src/serverinspect/runners/*.py" = ["E501"], "tests/**/*.py" = ["E501"] }
 

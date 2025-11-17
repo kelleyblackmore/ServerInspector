@@ -1,7 +1,6 @@
 """
-Unit tests for result types and status handling
+Unit tests for result types and data structures
 """
-import pytest
 
 from serverinspect.result_types import (
     ResultStatus,

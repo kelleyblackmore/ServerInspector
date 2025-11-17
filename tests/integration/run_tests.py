@@ -1,25 +1,20 @@
 #!/usr/bin/env python3
 """
-Multi-OS Integration Test Runner for ServerInspector
-
-This script orchestrates testing ServerInspector against multiple Linux
-distributions running in Docker containers via SSH.
+Integration test runner for ServerInspect.
+Tests the tool against multiple containerized distributions.
 """
 
-import os
-import sys
 import json
-import yaml
-import time
 import subprocess
+import time
+import yaml
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime
+
 from rich.console import Console
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.panel import Panel
-from rich.tree import Tree
 
 console = Console()
 
@@ -211,7 +206,7 @@ class TestRunner:
                 try:
                     return json.loads(result.stdout)
                 except json.JSONDecodeError:
-                    console.print(f"[yellow]Warning: Invalid JSON output[/yellow]")
+                    console.print("[yellow]Warning: Invalid JSON output[/yellow]")
                     return {
                         "error": "Invalid JSON output",
                         "stdout": result.stdout[:500],
@@ -374,7 +369,7 @@ class TestRunner:
         
         # Overall summary
         overall_pass_rate = round(total_passed / total_tests * 100, 1) if total_tests > 0 else 0
-        console.print(f"\n[bold]Overall Results:[/bold]")
+        console.print("\n[bold]Overall Results:[/bold]")
         console.print(f"  Total Tests: {total_tests}")
         console.print(f"  Passed: [green]{total_passed}[/green]")
         console.print(f"  Failed: [red]{total_failed}[/red]")

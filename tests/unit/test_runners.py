@@ -1,8 +1,7 @@
 """
 Unit tests for runner modules
 """
-import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 
 from serverinspect.runners import get_runner
 from serverinspect.runners.local import LocalRunner

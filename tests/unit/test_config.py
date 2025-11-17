@@ -3,7 +3,6 @@ Unit tests for configuration loading and validation
 """
 import pytest
 import yaml
-from pathlib import Path
 
 from serverinspect.config import load_config, process_variables
 

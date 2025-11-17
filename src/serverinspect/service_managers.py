@@ -8,7 +8,7 @@ SysV init, OpenRC, and other service managers.
 import logging
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 logger = logging.getLogger("serverinspect")
 

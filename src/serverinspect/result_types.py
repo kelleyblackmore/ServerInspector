@@ -295,7 +295,7 @@ class ProcessCheckResult(TestResult):
         result.details["process_name"] = process_name
         result.details["running"] = False
         result.details["count"] = 0
-        result.add_suggestion(f"Start the process/service")
+        result.add_suggestion("Start the process/service")
         result.add_suggestion(f"Check with: ps aux | grep {process_name}")
         return result
 
