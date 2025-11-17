@@ -49,7 +49,11 @@ def cli(debug):
 @click.option("--username", "-u", help="SSH username for remote host")
 @click.option("--key-file", "-k", type=click.Path(exists=True), help="SSH key file")
 @click.option("--password", "-p", is_flag=True, help="Prompt for SSH password")
-@click.option("--password-stdin", envvar="SERVERINSPECT_PASSWORD", help="SSH password (not recommended, use key-file instead)")
+@click.option(
+    "--password-stdin",
+    envvar="SERVERINSPECT_PASSWORD",
+    help="SSH password (not recommended, use key-file instead)",
+)
 @click.option(
     "--output-format",
     "-o",
@@ -60,7 +64,17 @@ def cli(debug):
 @click.option(
     "--output-file", "-f", type=click.Path(), help="Output file (default: stdout)"
 )
-def run(config, host, port, username, key_file, password, password_stdin, output_format, output_file):
+def run(
+    config,
+    host,
+    port,
+    username,
+    key_file,
+    password,
+    password_stdin,
+    output_format,
+    output_file,
+):
     """Run tests defined in a YAML configuration file."""
     try:
         ssh_password = None

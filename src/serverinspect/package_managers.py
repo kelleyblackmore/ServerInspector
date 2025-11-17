@@ -244,9 +244,9 @@ PACKAGE_MANAGERS = [
         name="pkg",
         binary="pkg",
         check_cmd="pkg info {package}",
-        parse_version=lambda x: x.splitlines()[0].split()[-1]
-        if x.splitlines()
-        else None,
+        parse_version=lambda x: (
+            x.splitlines()[0].split()[-1] if x.splitlines() else None
+        ),
         priority=30,
         description="PKG package manager (FreeBSD)",
     ),
@@ -414,9 +414,7 @@ class PackageManagerRegistry:
                         result["package_manager"] = pm.name
                         return result
                 except Exception as e:
-                    logger.debug(
-                        f"Error checking package with {pm.name}: {str(e)}"
-                    )
+                    logger.debug(f"Error checking package with {pm.name}: {str(e)}")
 
         return result
 

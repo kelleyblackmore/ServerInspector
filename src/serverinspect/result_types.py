@@ -180,9 +180,7 @@ class ServiceCheckResult(TestResult):
         )
         result.details["service"] = service_name
         result.details["exists"] = False
-        result.add_suggestion(
-            f"Install the service package for '{service_name}'"
-        )
+        result.add_suggestion(f"Install the service package for '{service_name}'")
         result.add_suggestion(
             f"Check service name: systemctl list-unit-files | grep {service_name}"
         )
@@ -336,9 +334,7 @@ class ResultBuilder:
         )
 
     @staticmethod
-    def error(
-        name: str, test_type: str, error_message: str, **kwargs
-    ) -> TestResult:
+    def error(name: str, test_type: str, error_message: str, **kwargs) -> TestResult:
         """Create an error test result."""
         return TestResult(
             name=name,

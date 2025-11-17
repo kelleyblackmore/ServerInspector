@@ -1,9 +1,11 @@
 """
 Pytest configuration and shared fixtures
 """
-import pytest
+
 import tempfile
 from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture
@@ -24,15 +26,15 @@ def sample_config():
                 "name": "Test File Exists",
                 "type": "file",
                 "path": "/etc/hosts",
-                "exists": True
+                "exists": True,
             },
             {
                 "name": "Test Command",
                 "type": "command",
                 "command": "echo test",
-                "exit_status": 0
-            }
-        ]
+                "exit_status": 0,
+            },
+        ],
     }
 
 
@@ -40,7 +42,7 @@ def sample_config():
 def sample_yaml_config(temp_dir):
     """Create a sample YAML config file."""
     import yaml
-    
+
     config = {
         "title": "Sample Test",
         "tests": [
@@ -48,25 +50,26 @@ def sample_yaml_config(temp_dir):
                 "name": "Echo test",
                 "type": "command",
                 "command": "echo hello",
-                "exit_status": 0
+                "exit_status": 0,
             }
-        ]
+        ],
     }
-    
+
     config_file = temp_dir / "test_config.yaml"
     with open(config_file, "w") as f:
         yaml.dump(config, f)
-    
+
     return config_file
 
 
 @pytest.fixture
 def mock_command_output():
     """Mock command execution output."""
+
     class MockResult:
         def __init__(self, stdout="", stderr="", exit_code=0):
             self.stdout = stdout
             self.stderr = stderr
             self.exit_code = exit_code
-    
+
     return MockResult

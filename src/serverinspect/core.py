@@ -19,7 +19,13 @@ class ServerInspect:
     """
 
     def __init__(
-        self, config=None, host=None, port=22, username=None, key_file=None, password=None
+        self,
+        config=None,
+        host=None,
+        port=22,
+        username=None,
+        key_file=None,
+        password=None,
     ):
         """
         Initialize ServerInspect with the given configuration.

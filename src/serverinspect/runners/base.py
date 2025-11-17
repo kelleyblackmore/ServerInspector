@@ -9,7 +9,9 @@ import logging
 from abc import ABC, abstractmethod
 
 from serverinspect.package_managers import get_registry
-from serverinspect.service_managers import get_service_status as get_enhanced_service_status
+from serverinspect.service_managers import (
+    get_service_status as get_enhanced_service_status,
+)
 
 logger = logging.getLogger("serverinspect")
 
@@ -17,7 +19,7 @@ logger = logging.getLogger("serverinspect")
 class BaseRunner(ABC):
     """
     Abstract base class for all runners.
-    
+
     Subclasses must implement the run_command and run_command_with_status methods.
     All high-level operations (service_status, package_status, process_status)
     are implemented here and use the abstract command execution methods.
@@ -98,7 +100,7 @@ class BaseRunner(ABC):
     def _basic_service_status(self, service_name):
         """
         Basic service status check (legacy method).
-        
+
         This is kept for backward compatibility and as a fallback.
         """
         result = {"exists": False, "running": False, "enabled": False, "error": None}
@@ -191,18 +193,22 @@ class BaseRunner(ABC):
         try:
             registry = get_registry()
             result = registry.check_package(self, package_name, package_manager)
-            
+
             # Add error if package not found
             if not result["installed"] and not result.get("error"):
                 if package_manager:
-                    result["error"] = f"Package '{package_name}' not found using {package_manager}"
+                    result["error"] = (
+                        f"Package '{package_name}' not found using {package_manager}"
+                    )
                 else:
                     managers = registry.detect_available(self)
                     if managers:
-                        result["error"] = f"Package '{package_name}' not found in any package manager"
+                        result["error"] = (
+                            f"Package '{package_name}' not found in any package manager"
+                        )
                     else:
                         result["error"] = "No supported package manager found"
-            
+
             return result
         except Exception as e:
             logger.error(f"Error checking package status: {str(e)}")
