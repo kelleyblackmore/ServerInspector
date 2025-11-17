@@ -1,0 +1,122 @@
+---
+# Fedora-specific tests (using dnf/rpm package managers and systemd)
+
+test_groups:
+  - name: "Fedora Package Manager Tests"
+    tests:
+      - name: "DNF Available"
+        type: command
+        command: "dnf --version"
+        expected_status: 0
+        description: "Verify dnf package manager is available"
+
+      - name: "RPM Available"
+        type: command
+        command: "rpm --version"
+        expected_status: 0
+        description: "Verify rpm is available"
+
+      - name: "Check Installed Package (coreutils)"
+        type: package
+        name: "coreutils"
+        expected: installed
+        description: "Verify coreutils package is installed"
+
+      - name: "Check Installed Package (httpd)"
+        type: package
+        name: "httpd"
+        expected: installed
+        description: "Verify httpd package is installed"
+
+      - name: "RPM Query Package"
+        type: command
+        command: "rpm -q coreutils"
+        expected_status: 0
+        description: "Verify RPM package queries work"
+
+      - name: "DNF List Installed"
+        type: command
+        command: "dnf list installed | head -20"
+        expected_status: 0
+        description: "Verify DNF package listing works"
+
+  - name: "Fedora Service Tests"
+    tests:
+      - name: "Systemd Available"
+        type: command
+        command: "systemctl --version"
+        expected_status: 0
+        description: "Verify systemd is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "sshd"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "HTTPD Service Running"
+        type: service
+        name: "httpd"
+        expected: running
+        description: "Verify httpd service is running"
+
+      - name: "Systemctl Show Service"
+        type: command
+        command: "systemctl show httpd --no-pager"
+        expected_status: 0
+        description: "Verify detailed service information works"
+
+  - name: "Fedora System Information"
+    tests:
+      - name: "Fedora Release"
+        type: file
+        path: "/etc/fedora-release"
+        expected: exists
+        description: "Verify Fedora release file exists"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "Fedora"
+        description: "Verify Fedora in os-release file"
+
+      - name: "DNF Configuration"
+        type: file
+        path: "/etc/dnf/dnf.conf"
+        expected: exists
+        description: "Verify DNF configuration exists"
+
+  - name: "Fedora Network Tests"
+    tests:
+      - name: "NetworkManager Check"
+        type: command
+        command: "nmcli general status"
+        expected_status: 0
+        description: "Verify NetworkManager is available"
+
+      - name: "Port 80 Listening (httpd)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify httpd is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"
+
+  - name: "Fedora SELinux Tests"
+    tests:
+      - name: "SELinux Status"
+        type: command
+        command: "getenforce"
+        expected_status: 0
+        description: "Verify SELinux status command works"
+
+      - name: "SELinux Config Exists"
+        type: file
+        path: "/etc/selinux/config"
+        expected: exists
+        description: "Verify SELinux configuration exists"

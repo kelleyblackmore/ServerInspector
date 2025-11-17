@@ -1,0 +1,40 @@
+# CentOS Stream 9 test container
+FROM quay.io/centos/centos:stream9
+
+RUN dnf install -y --allowerasing \
+    openssh-server \
+    sudo \
+    curl \
+    wget \
+    git \
+    vim \
+    python3 \
+    python3-pip \
+    systemd \
+    cronie \
+    httpd \
+    net-tools \
+    iputils \
+    procps-ng \
+    && dnf clean all
+
+# Setup SSH
+RUN ssh-keygen -A
+RUN echo 'root:testpass' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Create test user
+RUN useradd -m -s /bin/bash testuser && echo 'testuser:testpass' | chpasswd
+RUN usermod -aG wheel testuser
+
+# Test files
+RUN mkdir -p /opt/test-data
+RUN echo "centos test" > /opt/test-data/test.txt
+
+# Enable services
+RUN systemctl enable sshd httpd crond || true
+
+EXPOSE 22
+
+CMD ["/usr/sbin/init"]

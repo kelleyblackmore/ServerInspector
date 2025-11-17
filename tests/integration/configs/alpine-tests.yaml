@@ -1,0 +1,122 @@
+---
+# Alpine-specific tests (using apk package manager and OpenRC)
+
+test_groups:
+  - name: "Alpine Package Manager Tests"
+    tests:
+      - name: "APK Available"
+        type: command
+        command: "apk --version"
+        expected_status: 0
+        description: "Verify apk package manager is available"
+
+      - name: "Check Installed Package (busybox)"
+        type: package
+        name: "busybox"
+        expected: installed
+        description: "Verify busybox package is installed"
+
+      - name: "Check Installed Package (nginx)"
+        type: package
+        name: "nginx"
+        expected: installed
+        description: "Verify nginx package is installed"
+
+      - name: "APK Info Command"
+        type: command
+        command: "apk info nginx"
+        expected_status: 0
+        description: "Verify APK package info works"
+
+      - name: "APK List Installed"
+        type: command
+        command: "apk list --installed | head -20"
+        expected_status: 0
+        description: "Verify APK package listing works"
+
+  - name: "Alpine Service Tests (OpenRC)"
+    tests:
+      - name: "OpenRC Available"
+        type: command
+        command: "rc-status --version"
+        expected_status: 0
+        description: "Verify OpenRC is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "sshd"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "Nginx Service Running"
+        type: service
+        name: "nginx"
+        expected: running
+        description: "Verify nginx service is running"
+
+      - name: "RC-Status Command"
+        type: command
+        command: "rc-status"
+        expected_status: 0
+        description: "Verify OpenRC status listing works"
+
+      - name: "List Running Services"
+        type: command
+        command: "rc-status --servicelist"
+        expected_status: 0
+        description: "Verify OpenRC service listing works"
+
+  - name: "Alpine System Information"
+    tests:
+      - name: "Alpine Release"
+        type: file
+        path: "/etc/alpine-release"
+        expected: exists
+        description: "Verify Alpine release file exists"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "Alpine"
+        description: "Verify Alpine in os-release file"
+
+      - name: "APK Repositories"
+        type: file
+        path: "/etc/apk/repositories"
+        expected: exists
+        description: "Verify APK repositories file exists"
+
+  - name: "Alpine Network Tests"
+    tests:
+      - name: "Network Interfaces Config"
+        type: file
+        path: "/etc/network/interfaces"
+        expected: exists
+        description: "Verify network interfaces configuration"
+
+      - name: "Port 80 Listening (nginx)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify nginx is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"
+
+  - name: "Alpine-Specific Features"
+    tests:
+      - name: "Busybox Shell"
+        type: command
+        command: "busybox --help"
+        expected_status: 0
+        description: "Verify busybox utilities are available"
+
+      - name: "Musl Libc Check"
+        type: command
+        command: "ldd --version 2>&1 | grep -i musl"
+        expected_status: 0
+        description: "Verify Alpine uses musl libc"

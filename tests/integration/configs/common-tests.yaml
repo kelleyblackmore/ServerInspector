@@ -1,0 +1,117 @@
+---
+# Common tests that should work across all Linux distributions
+# These test basic system info, file operations, and process checks
+
+test_groups:
+  - name: "Common System Information"
+    tests:
+      - name: "Hostname Check"
+        type: command
+        command: "hostname"
+        expected_status: 0
+        description: "Verify hostname command works"
+
+      - name: "Kernel Version"
+        type: command
+        command: "uname -r"
+        expected_status: 0
+        description: "Check kernel version is available"
+
+      - name: "System Uptime"
+        type: command
+        command: "uptime"
+        expected_status: 0
+        description: "Verify uptime command works"
+
+      - name: "Current User"
+        type: command
+        command: "whoami"
+        expected_status: 0
+        description: "Verify user identification"
+
+  - name: "File System Tests"
+    tests:
+      - name: "Test Directory Exists"
+        type: file
+        path: "/opt/test-data"
+        expected: exists
+        description: "Verify test data directory exists"
+
+      - name: "Test File Exists"
+        type: file
+        path: "/opt/test-data/sample.txt"
+        expected: exists
+        description: "Verify sample test file exists"
+
+      - name: "Test File Content"
+        type: file
+        path: "/opt/test-data/sample.txt"
+        expected: contains
+        pattern: "Hello from ServerInspector test suite"
+        description: "Verify test file has expected content"
+
+      - name: "Root Directory Exists"
+        type: file
+        path: "/"
+        expected: exists
+        description: "Verify root filesystem is accessible"
+
+      - name: "Tmp Directory Writable"
+        type: command
+        command: "test -w /tmp && echo 'writable'"
+        expected_status: 0
+        description: "Verify /tmp is writable"
+
+  - name: "Process Tests"
+    tests:
+      - name: "Init Process Running"
+        type: process
+        name: "init"
+        expected: running
+        description: "Verify init/systemd process is running (PID 1)"
+
+      - name: "SSH Server Process"
+        type: process
+        name: "sshd"
+        expected: running
+        description: "Verify SSH server is running"
+
+  - name: "Network Tests"
+    tests:
+      - name: "Localhost Resolves"
+        type: command
+        command: "ping -c 1 localhost"
+        expected_status: 0
+        description: "Verify localhost networking works"
+
+      - name: "Network Interface Check"
+        type: command
+        command: "ip link show"
+        expected_status: 0
+        description: "Verify network interfaces are visible"
+
+  - name: "Basic Commands"
+    tests:
+      - name: "Echo Command"
+        type: command
+        command: "echo 'test'"
+        expected_status: 0
+        description: "Verify basic shell commands work"
+
+      - name: "Date Command"
+        type: command
+        command: "date"
+        expected_status: 0
+        description: "Verify date command works"
+
+      - name: "PS Command"
+        type: command
+        command: "ps aux"
+        expected_status: 0
+        description: "Verify process listing works"
+
+      - name: "DF Command"
+        type: command
+        command: "df -h"
+        expected_status: 0
+        description: "Verify disk usage reporting works"

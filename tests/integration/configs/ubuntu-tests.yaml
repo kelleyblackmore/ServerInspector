@@ -1,0 +1,102 @@
+---
+# Ubuntu-specific tests (using apt/dpkg package managers and systemd)
+
+test_groups:
+  - name: "Ubuntu Package Manager Tests"
+    tests:
+      - name: "APT Available"
+        type: command
+        command: "apt --version"
+        expected_status: 0
+        description: "Verify apt package manager is available"
+
+      - name: "DPKG Available"
+        type: command
+        command: "dpkg --version"
+        expected_status: 0
+        description: "Verify dpkg is available"
+
+      - name: "Check Installed Package (coreutils)"
+        type: package
+        name: "coreutils"
+        expected: installed
+        description: "Verify coreutils package is installed"
+
+      - name: "Check Installed Package (nginx)"
+        type: package
+        name: "nginx"
+        expected: installed
+        description: "Verify nginx package is installed"
+
+      - name: "Check Not Installed Package"
+        type: package
+        name: "package-does-not-exist-xyz123"
+        expected: not_installed
+        description: "Verify detection of non-installed packages"
+
+  - name: "Ubuntu Service Tests"
+    tests:
+      - name: "Systemd Available"
+        type: command
+        command: "systemctl --version"
+        expected_status: 0
+        description: "Verify systemd is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "ssh"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "Nginx Service Running"
+        type: service
+        name: "nginx"
+        expected: running
+        description: "Verify nginx service is running"
+
+      - name: "Check Service Status Details"
+        type: command
+        command: "systemctl status nginx --no-pager"
+        expected_status: 0
+        description: "Verify detailed service status works"
+
+  - name: "Ubuntu System Information"
+    tests:
+      - name: "LSB Release"
+        type: command
+        command: "lsb_release -a"
+        expected_status: 0
+        description: "Verify Ubuntu version information"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "Ubuntu"
+        description: "Verify Ubuntu in os-release file"
+
+      - name: "APT Sources"
+        type: file
+        path: "/etc/apt/sources.list.d"
+        expected: exists
+        description: "Verify APT sources directory exists"
+
+  - name: "Ubuntu Network Tests"
+    tests:
+      - name: "Netplan Directory"
+        type: file
+        path: "/etc/netplan"
+        expected: exists
+        description: "Verify netplan configuration directory exists"
+
+      - name: "Port 80 Listening (nginx)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify nginx is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"

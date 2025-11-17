@@ -1,0 +1,47 @@
+# Alpine Linux 3.19 test container
+FROM alpine:3.19
+
+# Install packages
+RUN apk add --no-cache \
+    openssh \
+    sudo \
+    curl \
+    wget \
+    git \
+    vim \
+    python3 \
+    py3-pip \
+    openrc \
+    nginx \
+    busybox-extras
+
+# Setup SSH
+RUN ssh-keygen -A
+RUN echo 'root:testpass' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Create test user
+RUN adduser -D -s /bin/sh testuser
+RUN echo 'testuser:testpass' | chpasswd
+RUN addgroup testuser wheel
+
+# Configure sudo
+RUN echo '%wheel ALL=(ALL) ALL' > /etc/sudoers.d/wheel
+
+# Test files
+RUN mkdir -p /opt/test-data
+RUN echo "alpine test" > /opt/test-data/test.txt
+
+# Setup OpenRC
+RUN mkdir -p /run/openrc
+RUN touch /run/openrc/softlevel
+
+# Enable services
+RUN rc-update add sshd default || true
+RUN rc-update add nginx default || true
+
+EXPOSE 22
+
+# Alpine uses OpenRC not systemd
+CMD ["/sbin/init"]

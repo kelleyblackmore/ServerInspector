@@ -1,0 +1,122 @@
+---
+# CentOS-specific tests (using dnf/yum/rpm package managers and systemd)
+
+test_groups:
+  - name: "CentOS Package Manager Tests"
+    tests:
+      - name: "DNF Available"
+        type: command
+        command: "dnf --version"
+        expected_status: 0
+        description: "Verify dnf package manager is available"
+
+      - name: "YUM Available"
+        type: command
+        command: "yum --version"
+        expected_status: 0
+        description: "Verify yum is available (usually symlink to dnf)"
+
+      - name: "RPM Available"
+        type: command
+        command: "rpm --version"
+        expected_status: 0
+        description: "Verify rpm is available"
+
+      - name: "Check Installed Package (coreutils)"
+        type: package
+        name: "coreutils"
+        expected: installed
+        description: "Verify coreutils package is installed"
+
+      - name: "Check Installed Package (httpd)"
+        type: package
+        name: "httpd"
+        expected: installed
+        description: "Verify httpd package is installed"
+
+      - name: "RPM List All Packages"
+        type: command
+        command: "rpm -qa | head -20"
+        expected_status: 0
+        description: "Verify RPM package listing works"
+
+  - name: "CentOS Service Tests"
+    tests:
+      - name: "Systemd Available"
+        type: command
+        command: "systemctl --version"
+        expected_status: 0
+        description: "Verify systemd is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "sshd"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "HTTPD Service Running"
+        type: service
+        name: "httpd"
+        expected: running
+        description: "Verify httpd service is running"
+
+      - name: "Service Dependencies"
+        type: command
+        command: "systemctl list-dependencies httpd --no-pager"
+        expected_status: 0
+        description: "Verify service dependency listing works"
+
+  - name: "CentOS System Information"
+    tests:
+      - name: "CentOS Release"
+        type: file
+        path: "/etc/centos-release"
+        expected: exists
+        description: "Verify CentOS release file exists"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "CentOS"
+        description: "Verify CentOS in os-release file"
+
+      - name: "YUM Repos Directory"
+        type: file
+        path: "/etc/yum.repos.d"
+        expected: exists
+        description: "Verify YUM repositories directory exists"
+
+  - name: "CentOS Network Tests"
+    tests:
+      - name: "NetworkManager Check"
+        type: command
+        command: "nmcli general status"
+        expected_status: 0
+        description: "Verify NetworkManager is available"
+
+      - name: "Port 80 Listening (httpd)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify httpd is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"
+
+  - name: "CentOS SELinux Tests"
+    tests:
+      - name: "SELinux Status"
+        type: command
+        command: "getenforce"
+        expected_status: 0
+        description: "Verify SELinux status command works"
+
+      - name: "SELinux Config Exists"
+        type: file
+        path: "/etc/selinux/config"
+        expected: exists
+        description: "Verify SELinux configuration exists"

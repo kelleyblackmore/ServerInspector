@@ -1,0 +1,49 @@
+# Ubuntu 24.04 LTS test container
+FROM ubuntu:24.04
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essential packages and SSH server
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    sudo \
+    curl \
+    wget \
+    git \
+    vim \
+    nano \
+    python3 \
+    python3-pip \
+    systemd \
+    systemd-sysv \
+    cron \
+    nginx \
+    net-tools \
+    iputils-ping \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:testpass' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Create test user
+RUN useradd -m -s /bin/bash testuser && echo 'testuser:testpass' | chpasswd
+RUN usermod -aG sudo testuser
+
+# Create test files for validation
+RUN mkdir -p /opt/test-data
+RUN echo "test content" > /opt/test-data/test.txt
+RUN chmod 644 /opt/test-data/test.txt
+
+# Enable and configure nginx for testing
+RUN systemctl enable nginx || true
+
+# Expose SSH port
+EXPOSE 22
+
+# Use systemd as init
+CMD ["/lib/systemd/systemd"]

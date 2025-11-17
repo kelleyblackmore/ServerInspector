@@ -11,7 +11,7 @@ cd "$PROJECT_ROOT"
 # Check if the image exists, build if needed
 if ! docker image inspect serverinspect:latest &>/dev/null; then
     echo "ServerInspect image not found, building..."
-    docker build -t serverinspect:latest .
+    docker build -t serverinspect:latest -f docker/Dockerfile .
 fi
 
 # Ensure config directory exists

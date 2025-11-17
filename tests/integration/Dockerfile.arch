@@ -1,0 +1,45 @@
+# Arch Linux test container
+FROM archlinux:latest
+
+# Update system and install packages
+RUN pacman -Syu --noconfirm && \
+    pacman -S --noconfirm \
+    openssh \
+    sudo \
+    curl \
+    wget \
+    git \
+    vim \
+    python \
+    python-pip \
+    systemd \
+    cronie \
+    nginx \
+    net-tools \
+    iputils \
+    procps-ng \
+    && pacman -Scc --noconfirm
+
+# Setup SSH
+RUN ssh-keygen -A
+RUN echo 'root:testpass' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Create test user
+RUN useradd -m -s /bin/bash testuser && echo 'testuser:testpass' | chpasswd
+RUN usermod -aG wheel testuser
+
+# Configure sudo
+RUN echo '%wheel ALL=(ALL) ALL' >> /etc/sudoers
+
+# Test files
+RUN mkdir -p /opt/test-data
+RUN echo "arch test" > /opt/test-data/test.txt
+
+# Enable services
+RUN systemctl enable sshd nginx cronie || true
+
+EXPOSE 22
+
+CMD ["/usr/lib/systemd/systemd"]

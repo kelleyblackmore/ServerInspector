@@ -1,0 +1,122 @@
+---
+# Arch Linux-specific tests (using pacman package manager and systemd)
+
+test_groups:
+  - name: "Arch Package Manager Tests"
+    tests:
+      - name: "Pacman Available"
+        type: command
+        command: "pacman --version"
+        expected_status: 0
+        description: "Verify pacman package manager is available"
+
+      - name: "Check Installed Package (coreutils)"
+        type: package
+        name: "coreutils"
+        expected: installed
+        description: "Verify coreutils package is installed"
+
+      - name: "Check Installed Package (nginx)"
+        type: package
+        name: "nginx"
+        expected: installed
+        description: "Verify nginx package is installed"
+
+      - name: "Pacman Query Package"
+        type: command
+        command: "pacman -Q nginx"
+        expected_status: 0
+        description: "Verify pacman package queries work"
+
+      - name: "Pacman List Installed"
+        type: command
+        command: "pacman -Q | head -20"
+        expected_status: 0
+        description: "Verify pacman package listing works"
+
+      - name: "Pacman Package Info"
+        type: command
+        command: "pacman -Qi nginx"
+        expected_status: 0
+        description: "Verify detailed package info works"
+
+  - name: "Arch Service Tests"
+    tests:
+      - name: "Systemd Available"
+        type: command
+        command: "systemctl --version"
+        expected_status: 0
+        description: "Verify systemd is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "sshd"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "Nginx Service Running"
+        type: service
+        name: "nginx"
+        expected: running
+        description: "Verify nginx service is running"
+
+      - name: "Systemctl List Failed"
+        type: command
+        command: "systemctl --failed --no-pager"
+        expected_status: 0
+        description: "Verify failed service detection works"
+
+  - name: "Arch System Information"
+    tests:
+      - name: "Arch Release"
+        type: file
+        path: "/etc/arch-release"
+        expected: exists
+        description: "Verify Arch release file exists"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "Arch"
+        description: "Verify Arch in os-release file"
+
+      - name: "Pacman Configuration"
+        type: file
+        path: "/etc/pacman.conf"
+        expected: exists
+        description: "Verify pacman configuration exists"
+
+      - name: "Pacman Mirror List"
+        type: file
+        path: "/etc/pacman.d/mirrorlist"
+        expected: exists
+        description: "Verify pacman mirror list exists"
+
+  - name: "Arch Network Tests"
+    tests:
+      - name: "Port 80 Listening (nginx)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify nginx is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"
+
+  - name: "Arch-Specific Features"
+    tests:
+      - name: "Journal Log Check"
+        type: command
+        command: "journalctl -n 10 --no-pager"
+        expected_status: 0
+        description: "Verify systemd journal access works"
+
+      - name: "Check AUR Helper Availability"
+        type: command
+        command: "which yay || echo 'AUR helper not installed'"
+        expected_status: 0
+        description: "Check for AUR helper (optional)"

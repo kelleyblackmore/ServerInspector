@@ -69,7 +69,7 @@ To build a standalone executable that can be distributed without Python:
 
 2. Run the build script:
    ```bash
-   python build_executable.py
+   python scripts/build/build_executable.py
    ```
 
 3. The executable will be created in the `dist` directory

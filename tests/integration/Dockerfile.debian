@@ -1,0 +1,45 @@
+# Debian 12 (Bookworm) test container
+FROM debian:12
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    sudo \
+    curl \
+    wget \
+    git \
+    vim \
+    python3 \
+    python3-pip \
+    systemd \
+    systemd-sysv \
+    cron \
+    apache2 \
+    net-tools \
+    iputils-ping \
+    procps \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:testpass' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Create test user
+RUN useradd -m -s /bin/bash testuser && echo 'testuser:testpass' | chpasswd
+RUN usermod -aG sudo testuser
+
+# Test files
+RUN mkdir -p /opt/test-data
+RUN echo "debian test" > /opt/test-data/test.txt
+RUN chmod 755 /opt/test-data
+
+# Enable services
+RUN systemctl enable apache2 || true
+
+EXPOSE 22
+
+CMD ["/lib/systemd/systemd"]

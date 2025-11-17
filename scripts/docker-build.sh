@@ -19,11 +19,11 @@ if ! command -v docker &> /dev/null; then
 fi
 
 echo "Building ServerInspect Docker image..."
-docker build -t serverinspect:latest .
+docker build -t serverinspect:latest -f docker/Dockerfile .
 
 echo "Successfully built ServerInspect Docker image"
 echo "You can now use it with commands like:"
 echo "  docker run serverinspect check file /etc/hosts --exists"
 echo "  docker run -v $(pwd)/config:/config serverinspect run /config/docker-example.yaml"
 echo ""
-echo "For more information, see README-docker.md"
+echo "For more information, see docker/README-docker.md"

@@ -1,0 +1,42 @@
+# openSUSE Tumbleweed test container
+FROM opensuse/tumbleweed:latest
+
+# Install packages
+RUN zypper refresh && \
+    zypper install -y \
+    openssh \
+    sudo \
+    curl \
+    wget \
+    git \
+    vim \
+    python3 \
+    python3-pip \
+    systemd \
+    cron \
+    apache2 \
+    net-tools \
+    iputils \
+    procps \
+    && zypper clean --all
+
+# Setup SSH
+RUN ssh-keygen -A
+RUN echo 'root:testpass' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Create test user
+RUN useradd -m -s /bin/bash testuser && echo 'testuser:testpass' | chpasswd
+RUN usermod -aG wheel testuser
+
+# Test files
+RUN mkdir -p /opt/test-data
+RUN echo "opensuse test" > /opt/test-data/test.txt
+
+# Enable services
+RUN systemctl enable sshd apache2 cron || true
+
+EXPOSE 22
+
+CMD ["/usr/lib/systemd/systemd"]

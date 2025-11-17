@@ -8,10 +8,12 @@ import shlex
 
 import paramiko
 
+from serverinspect.runners.base import BaseRunner
+
 logger = logging.getLogger("serverinspect")
 
 
-class SSHRunner:
+class SSHRunner(BaseRunner):
     """
     Runner that executes tests on a remote system via SSH.
     """
@@ -174,174 +176,6 @@ class SSHRunner:
         """
         exit_code, _, _ = self.run_command_with_status(f"test -e {path}")
         return exit_code == 0
-
-    def service_status(self, service_name):
-        """
-        Check the status of a service on the remote system.
-
-        Args:
-            service_name (str): Name of the service
-
-        Returns:
-            dict: Service status information
-        """
-        result = {"exists": False, "running": False, "enabled": False, "error": None}
-
-        # Try systemctl first (systemd)
-        exit_code, _, _ = self.run_command_with_status("which systemctl")
-        if exit_code == 0:
-            try:
-                # Check if service exists
-                exit_code, _, _ = self.run_command_with_status(
-                    f"systemctl list-unit-files | grep -q {service_name}.service"
-                )
-                result["exists"] = exit_code == 0
-
-                if result["exists"]:
-                    # Check if service is running
-                    exit_code, _, _ = self.run_command_with_status(
-                        f"systemctl is-active --quiet {service_name}"
-                    )
-                    result["running"] = exit_code == 0
-
-                    # Check if service is enabled
-                    exit_code, _, _ = self.run_command_with_status(
-                        f"systemctl is-enabled --quiet {service_name}"
-                    )
-                    result["enabled"] = exit_code == 0
-
-                return result
-            except Exception as e:
-                result["error"] = str(e)
-                logger.debug(f"Error checking service with systemctl: {str(e)}")
-
-        # Try service command (SysV init)
-        exit_code, _, _ = self.run_command_with_status("which service")
-        if exit_code == 0:
-            try:
-                # Check if service exists
-                exit_code, _, _ = self.run_command_with_status(
-                    f"service {service_name} status"
-                )
-                result["exists"] = exit_code != 127  # 127 = command not found
-
-                if result["exists"]:
-                    # Parsing the output to determine if it's running
-                    _, stdout, _ = self.run_command_with_status(
-                        f"service {service_name} status"
-                    )
-                    result["running"] = "running" in stdout.lower()
-
-                    # Check if service is enabled (might not work on all systems)
-                    exit_code, _, _ = self.run_command_with_status("ls /etc/init.d")
-                    if exit_code == 0:
-                        for i in range(2, 6):  # Check runlevels 2-5
-                            exit_code, stdout, _ = self.run_command_with_status(
-                                f"ls /etc/rc{i}.d/S*{service_name} 2>/dev/null || ls /etc/rc.d/rc{i}.d/S*{service_name} 2>/dev/null"
-                            )
-                            if exit_code == 0 and stdout.strip():
-                                result["enabled"] = True
-                                break
-
-                return result
-            except Exception as e:
-                if not result["error"]:  # Don't overwrite systemctl error
-                    result["error"] = str(e)
-                logger.debug(f"Error checking service with service command: {str(e)}")
-
-        # If we get here, we couldn't check the service
-        if not result["error"]:
-            result["error"] = (
-                "Could not determine service status (no systemctl or service command found)"
-            )
-
-        return result
-
-    def package_status(self, package_name):
-        """
-        Check if a package is installed on the remote system.
-
-        Args:
-            package_name (str): Name of the package
-
-        Returns:
-            dict: Package status information
-        """
-        result = {"installed": False, "version": None, "error": None}
-
-        # Try to detect the package manager
-        package_managers = [
-            ("dpkg", "-s"),  # Debian, Ubuntu
-            ("rpm", "-q"),  # Red Hat, CentOS, Fedora
-            ("pacman", "-Q"),  # Arch Linux
-            ("pkg_info", "-E"),  # FreeBSD
-            ("pkg", "info"),  # FreeBSD newer
-            ("brew", "list --versions"),  # macOS Homebrew
-        ]
-
-        for pm_name, pm_arg in package_managers:
-            exit_code, _, _ = self.run_command_with_status(f"which {pm_name}")
-            if exit_code == 0:
-                try:
-                    exit_code, stdout, _ = self.run_command_with_status(
-                        f"{pm_name} {pm_arg} {package_name}"
-                    )
-                    result["installed"] = exit_code == 0
-
-                    if result["installed"] and stdout:
-                        # Try to extract version information
-                        if pm_name == "dpkg":
-                            for line in stdout.splitlines():
-                                if line.startswith("Version:"):
-                                    result["version"] = line.split(":", 1)[1].strip()
-                                    break
-                        elif pm_name == "rpm" or pm_name == "pacman":
-                            # Output format: package-name-version
-                            parts = stdout.strip().split("-")
-                            if len(parts) >= 3:
-                                result["version"] = "-".join(parts[2:])
-                        elif pm_name == "brew":
-                            if package_name in stdout:
-                                result["version"] = stdout.split()[1]
-                        else:
-                            # Generic: just use first line of output as version
-                            result["version"] = stdout.splitlines()[0].strip()
-
-                    return result
-                except Exception as e:
-                    result["error"] = str(e)
-                    logger.debug(f"Error checking package with {pm_name}: {str(e)}")
-
-        # If we get here, we couldn't check the package
-        if not result["error"]:
-            result["error"] = (
-                "Could not determine package status (no supported package manager found)"
-            )
-
-        return result
-
-    def process_status(self, process_name):
-        """
-        Get the process status on the remote machine.
-        Checks if the process is running.
-        """
-        try:
-            count = 0
-            process_check_output = self.run_command(f"pgrep -c '{process_name}'")
-
-            if process_check_output:
-                count = int(process_check_output.strip())
-
-            logger.debug(f"Found {count} instances of {process_name} running")
-            return count > 0, f"{count} instance(s) running"
-        except ValueError as e:
-            # Handle case where output couldn't be converted to integer
-            logger.error(f"Error parsing process count: {str(e)}")
-            return False, f"Error checking process: {str(e)}"
-        except Exception as e:
-            # Handle other exceptions
-            logger.error(f"Error checking process status: {str(e)}")
-            return False, f"Error checking process: {str(e)}"
 
     def __del__(self):
         """Clean up resources when the object is garbage collected."""

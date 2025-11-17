@@ -1,0 +1,128 @@
+---
+# openSUSE-specific tests (using zypper/rpm package managers and systemd)
+
+test_groups:
+  - name: "openSUSE Package Manager Tests"
+    tests:
+      - name: "Zypper Available"
+        type: command
+        command: "zypper --version"
+        expected_status: 0
+        description: "Verify zypper package manager is available"
+
+      - name: "RPM Available"
+        type: command
+        command: "rpm --version"
+        expected_status: 0
+        description: "Verify rpm is available"
+
+      - name: "Check Installed Package (coreutils)"
+        type: package
+        name: "coreutils"
+        expected: installed
+        description: "Verify coreutils package is installed"
+
+      - name: "Check Installed Package (nginx)"
+        type: package
+        name: "nginx"
+        expected: installed
+        description: "Verify nginx package is installed"
+
+      - name: "Zypper Search Package"
+        type: command
+        command: "zypper search nginx"
+        expected_status: 0
+        description: "Verify zypper package search works"
+
+      - name: "RPM Query Package"
+        type: command
+        command: "rpm -q nginx"
+        expected_status: 0
+        description: "Verify RPM package queries work"
+
+      - name: "Zypper List Installed"
+        type: command
+        command: "zypper packages --installed-only | head -20"
+        expected_status: 0
+        description: "Verify zypper package listing works"
+
+  - name: "openSUSE Service Tests"
+    tests:
+      - name: "Systemd Available"
+        type: command
+        command: "systemctl --version"
+        expected_status: 0
+        description: "Verify systemd is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "sshd"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "Nginx Service Running"
+        type: service
+        name: "nginx"
+        expected: running
+        description: "Verify nginx service is running"
+
+      - name: "Service Status Details"
+        type: command
+        command: "systemctl status nginx --no-pager"
+        expected_status: 0
+        description: "Verify detailed service status works"
+
+  - name: "openSUSE System Information"
+    tests:
+      - name: "SUSE Release"
+        type: file
+        path: "/etc/SUSE-brand"
+        expected: exists
+        description: "Verify SUSE brand file exists"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "openSUSE"
+        description: "Verify openSUSE in os-release file"
+
+      - name: "Zypper Repos Directory"
+        type: file
+        path: "/etc/zypp/repos.d"
+        expected: exists
+        description: "Verify zypper repositories directory exists"
+
+  - name: "openSUSE Network Tests"
+    tests:
+      - name: "Wicked Network Manager"
+        type: command
+        command: "wicked --version || echo 'wicked not available'"
+        expected_status: 0
+        description: "Check for wicked network manager"
+
+      - name: "Port 80 Listening (nginx)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify nginx is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"
+
+  - name: "openSUSE-Specific Features"
+    tests:
+      - name: "YaST Availability"
+        type: command
+        command: "yast --help || echo 'YaST not in PATH'"
+        expected_status: 0
+        description: "Check for YaST system management tool"
+
+      - name: "Zypper Patterns"
+        type: command
+        command: "zypper patterns | head -10"
+        expected_status: 0
+        description: "Verify zypper pattern support"

@@ -65,7 +65,7 @@ build-macos: clean-build
 # Docker build setup
 docker-build:
 	@echo "Building Docker image for cross-platform builds..."
-	docker build -t $(DOCKER_IMAGE) -f Dockerfile.build .
+	docker build -t $(DOCKER_IMAGE) -f docker/Dockerfile.build .
 	@echo "Docker image built successfully. You can now use:"
 	@echo "  make build-windows  - Build Windows executable"
 	@echo "  make build-linux    - Build Linux executable"
@@ -74,7 +74,7 @@ docker-build:
 # Running
 run:
 	@echo "Running $(PROJECT_NAME)..."
-	python main.py
+	python src/main.py
 
 # Install Linux executable
 install-linux:

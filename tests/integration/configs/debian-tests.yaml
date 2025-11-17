@@ -1,0 +1,102 @@
+---
+# Debian-specific tests (using apt/dpkg package managers and systemd)
+
+test_groups:
+  - name: "Debian Package Manager Tests"
+    tests:
+      - name: "APT Available"
+        type: command
+        command: "apt --version"
+        expected_status: 0
+        description: "Verify apt package manager is available"
+
+      - name: "DPKG Available"
+        type: command
+        command: "dpkg --version"
+        expected_status: 0
+        description: "Verify dpkg is available"
+
+      - name: "Check Installed Package (coreutils)"
+        type: package
+        name: "coreutils"
+        expected: installed
+        description: "Verify coreutils package is installed"
+
+      - name: "Check Installed Package (apache2)"
+        type: package
+        name: "apache2"
+        expected: installed
+        description: "Verify apache2 package is installed"
+
+      - name: "DPKG List Packages"
+        type: command
+        command: "dpkg -l | head -20"
+        expected_status: 0
+        description: "Verify package listing works"
+
+  - name: "Debian Service Tests"
+    tests:
+      - name: "Systemd Available"
+        type: command
+        command: "systemctl --version"
+        expected_status: 0
+        description: "Verify systemd is available"
+
+      - name: "SSH Service Running"
+        type: service
+        name: "ssh"
+        expected: running
+        description: "Verify SSH service is running"
+
+      - name: "Apache Service Running"
+        type: service
+        name: "apache2"
+        expected: running
+        description: "Verify Apache service is running"
+
+      - name: "List All Services"
+        type: command
+        command: "systemctl list-units --type=service --no-pager | head -20"
+        expected_status: 0
+        description: "Verify service listing works"
+
+  - name: "Debian System Information"
+    tests:
+      - name: "Debian Version"
+        type: file
+        path: "/etc/debian_version"
+        expected: exists
+        description: "Verify Debian version file exists"
+
+      - name: "OS Release File"
+        type: file
+        path: "/etc/os-release"
+        expected: contains
+        pattern: "Debian"
+        description: "Verify Debian in os-release file"
+
+      - name: "APT Sources"
+        type: file
+        path: "/etc/apt/sources.list"
+        expected: exists
+        description: "Verify APT sources file exists"
+
+  - name: "Debian Network Tests"
+    tests:
+      - name: "Network Interfaces"
+        type: file
+        path: "/etc/network"
+        expected: exists
+        description: "Verify network configuration directory"
+
+      - name: "Port 80 Listening (Apache)"
+        type: port
+        port: 80
+        expected: listening
+        description: "Verify Apache is listening on port 80"
+
+      - name: "Port 22 Listening (SSH)"
+        type: port
+        port: 22
+        expected: listening
+        description: "Verify SSH is listening on port 22"

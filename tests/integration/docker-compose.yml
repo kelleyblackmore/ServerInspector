@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: serverinspect-ubuntu
+    hostname: ubuntu-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ../../:/serverinspect:ro
+    ports:
+      - "2201:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.11
+    healthcheck:
+      test: ["CMD", "systemctl", "is-active", "sshd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  debian:
+    build:
+      context: .
+      dockerfile: Dockerfile.debian
+    container_name: serverinspect-debian
+    hostname: debian-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ../../:/serverinspect:ro
+    ports:
+      - "2202:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.12
+    healthcheck:
+      test: ["CMD", "systemctl", "is-active", "sshd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  fedora:
+    build:
+      context: .
+      dockerfile: Dockerfile.fedora
+    container_name: serverinspect-fedora
+    hostname: fedora-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ../../:/serverinspect:ro
+    ports:
+      - "2203:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.13
+    healthcheck:
+      test: ["CMD", "systemctl", "is-active", "sshd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  centos:
+    build:
+      context: .
+      dockerfile: Dockerfile.centos
+    container_name: serverinspect-centos
+    hostname: centos-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ../../:/serverinspect:ro
+    ports:
+      - "2204:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.14
+    healthcheck:
+      test: ["CMD", "systemctl", "is-active", "sshd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  alpine:
+    build:
+      context: .
+      dockerfile: Dockerfile.alpine
+    container_name: serverinspect-alpine
+    hostname: alpine-test
+    privileged: true
+    volumes:
+      - ../../:/serverinspect:ro
+    ports:
+      - "2205:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.15
+    healthcheck:
+      test: ["CMD", "rc-service", "sshd", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  arch:
+    build:
+      context: .
+      dockerfile: Dockerfile.arch
+    container_name: serverinspect-arch
+    hostname: arch-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ../../:/serverinspect:ro
+    ports:
+      - "2206:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.16
+    healthcheck:
+      test: ["CMD", "systemctl", "is-active", "sshd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  opensuse:
+    build:
+      context: .
+      dockerfile: Dockerfile.opensuse
+    container_name: serverinspect-opensuse
+    hostname: opensuse-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ../../:/serverinspect:ro
+    ports:
+      - "2207:22"
+    networks:
+      testnet:
+        ipv4_address: 172.20.0.17
+    healthcheck:
+      test: ["CMD", "systemctl", "is-active", "sshd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  testnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
