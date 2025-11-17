@@ -7,12 +7,13 @@ import logging
 logger = logging.getLogger("serverinspect")
 
 
-def get_runner(host=None, username=None, key_file=None, password=None):
+def get_runner(host=None, port=22, username=None, key_file=None, password=None):
     """
     Get the appropriate runner based on the connection parameters.
 
     Args:
         host (str): Remote host to connect to (None for local)
+        port (int): SSH port (default: 22)
         username (str): SSH username for remote host
         key_file (str): Path to SSH key file
         password (str): SSH password
@@ -24,7 +25,7 @@ def get_runner(host=None, username=None, key_file=None, password=None):
         # Use SSH runner for remote hosts
         from serverinspect.runners.ssh import SSHRunner
 
-        return SSHRunner(host, username, key_file, password)
+        return SSHRunner(host, username, key_file, password, port)
     else:
         # Use local runner for local tests
         from serverinspect.runners.local import LocalRunner

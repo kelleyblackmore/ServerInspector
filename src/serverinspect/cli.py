@@ -45,9 +45,11 @@ def cli(debug):
 @cli.command()
 @click.argument("config", type=click.Path(exists=True))
 @click.option("--host", "-h", help="Remote host to test (uses SSH)")
+@click.option("--port", type=int, default=22, help="SSH port (default: 22)")
 @click.option("--username", "-u", help="SSH username for remote host")
 @click.option("--key-file", "-k", type=click.Path(exists=True), help="SSH key file")
 @click.option("--password", "-p", is_flag=True, help="Prompt for SSH password")
+@click.option("--password-stdin", envvar="SERVERINSPECT_PASSWORD", help="SSH password (not recommended, use key-file instead)")
 @click.option(
     "--output-format",
     "-o",
@@ -58,12 +60,14 @@ def cli(debug):
 @click.option(
     "--output-file", "-f", type=click.Path(), help="Output file (default: stdout)"
 )
-def run(config, host, username, key_file, password, output_format, output_file):
+def run(config, host, port, username, key_file, password, password_stdin, output_format, output_file):
     """Run tests defined in a YAML configuration file."""
     try:
         ssh_password = None
         if password:
             ssh_password = click.prompt("SSH Password", hide_input=True)
+        elif password_stdin:
+            ssh_password = password_stdin
 
         # Load the test configuration
         config_data = load_config(config)
@@ -72,6 +76,7 @@ def run(config, host, username, key_file, password, output_format, output_file):
         inspector = ServerInspect(
             config=config_data,
             host=host,
+            port=port,
             username=username,
             key_file=key_file,
             password=ssh_password,

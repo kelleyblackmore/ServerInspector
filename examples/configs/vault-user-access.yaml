@@ -1,0 +1,71 @@
+---
+# Vault User Access Test - Simple Version
+# Tests if users can reach and access the Vault secrets engine
+
+title: Vault User Access Test
+description: Verify users can authenticate and access secrets in Vault
+
+tests:
+  # Basic connectivity
+  - name: Vault server is reachable
+    type: command
+    command: curl -s -o /dev/null -w "%{http_code}" http://localhost:8200/v1/sys/health
+    exit_status: 0
+
+  - name: Vault API port is listening
+    type: port
+    port: 8200
+    protocol: tcp
+    listening: true
+
+  # Service status
+  - name: Vault service is running
+    type: service
+    service: vault
+    running: true
+
+  # Authentication test
+  - name: User can authenticate with userpass
+    type: command
+    command: vault login -method=userpass username=appuser password=securepass -no-print
+    exit_status: 0
+
+  # Secrets engine access
+  - name: User can access secrets engine
+    type: command
+    command: vault kv list secret/
+    exit_status: 0
+
+  - name: User can read their application secret
+    type: command
+    command: vault kv get -field=api_key secret/myapp/config
+    exit_status: 0
+
+  - name: User can write to allowed path
+    type: command
+    command: vault kv put secret/myapp/temp test=value
+    exit_status: 0
+
+  - name: User can delete from allowed path
+    type: command
+    command: vault kv delete secret/myapp/temp
+    exit_status: 0
+
+  # Permission tests
+  - name: User cannot access restricted secrets
+    type: command
+    command: vault kv get secret/admin/root
+    exit_status: 2  # Should fail with permission denied
+
+  # Verify secrets engine health
+  - name: KV v2 secrets engine is mounted
+    type: command
+    command: vault secrets list -format=json | jq -e '.["secret/"]'
+    exit_status: 0
+
+  - name: Verify secret contains expected data
+    type: command
+    command: vault kv get -format=json secret/myapp/config | jq -r '.data.data | has("api_key")'
+    exit_status: 0
+    stdout:
+      contains: "true"

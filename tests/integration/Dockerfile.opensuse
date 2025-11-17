@@ -23,12 +23,12 @@ RUN zypper refresh && \
 # Setup SSH
 RUN ssh-keygen -A
 RUN echo 'root:testpass' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+#RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+#RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
 # Create test user
 RUN useradd -m -s /bin/bash testuser && echo 'testuser:testpass' | chpasswd
-RUN usermod -aG wheel testuser
+#RUN usermod -aG wheel testuser
 
 # Test files
 RUN mkdir -p /opt/test-data

@@ -19,7 +19,7 @@ class ServerInspect:
     """
 
     def __init__(
-        self, config=None, host=None, username=None, key_file=None, password=None
+        self, config=None, host=None, port=22, username=None, key_file=None, password=None
     ):
         """
         Initialize ServerInspect with the given configuration.
@@ -27,18 +27,20 @@ class ServerInspect:
         Args:
             config (dict): The test configuration
             host (str): Remote host to connect to (None for local)
+            port (int): SSH port (default: 22)
             username (str): SSH username for remote host
             key_file (str): Path to SSH key file
             password (str): SSH password
         """
         self.config = config or {}
         self.host = host
+        self.port = port
         self.username = username
         self.key_file = key_file
         self.password = password
 
         # Get the appropriate runner
-        self.runner = get_runner(host, username, key_file, password)
+        self.runner = get_runner(host, port, username, key_file, password)
 
         logger.debug(
             f"Initialized ServerInspect with runner: {self.runner.__class__.__name__}"

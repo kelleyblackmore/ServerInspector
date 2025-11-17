@@ -1,0 +1,199 @@
+---
+# HashiCorp Vault Server Test Configuration
+# Tests Vault installation, service status, API accessibility, and secrets engine functionality
+
+title: Vault Server Health Check
+description: Comprehensive tests for HashiCorp Vault server deployment
+author: ServerInspect User
+
+tests:
+  # Installation and Service Tests
+  - name: Vault binary installed
+    type: command
+    command: which vault
+    exit_status: 0
+
+  - name: Vault version check
+    type: command
+    command: vault version
+    exit_status: 0
+
+  - name: Vault service is running
+    type: service
+    service: vault
+    running: true
+    enabled: true
+
+  - name: Vault process is active
+    type: process
+    process: vault
+    running: true
+
+  # Network and Port Tests
+  - name: Vault API port 8200 is listening
+    type: port
+    port: 8200
+    protocol: tcp
+    listening: true
+
+  - name: Vault cluster port 8201 is listening
+    type: port
+    port: 8201
+    protocol: tcp
+    listening: true
+
+  # Configuration File Tests
+  - name: Vault config file exists
+    type: file
+    path: /etc/vault.d/vault.hcl
+    exists: true
+
+  - name: Vault config has correct permissions
+    type: file
+    path: /etc/vault.d/vault.hcl
+    exists: true
+    permissions: "640"
+
+  - name: Vault data directory exists
+    type: file
+    path: /opt/vault/data
+    exists: true
+
+  - name: Vault TLS cert exists
+    type: file
+    path: /etc/vault.d/vault-cert.pem
+    exists: true
+
+  # API Health Checks
+  - name: Vault API is responding
+    type: command
+    command: curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8200/v1/sys/health
+    exit_status: 0
+
+  - name: Vault is initialized
+    type: command
+    command: vault status -format=json | jq -r '.initialized'
+    exit_status: 0
+    stdout:
+      contains: "true"
+
+  - name: Vault is unsealed
+    type: command
+    command: vault status -format=json | jq -r '.sealed'
+    exit_status: 0
+    stdout:
+      contains: "false"
+
+  - name: Vault cluster health
+    type: command
+    command: vault status -format=json | jq -r '.cluster_name'
+    exit_status: 0
+
+  # Authentication Tests (requires VAULT_TOKEN environment variable)
+  - name: Vault login with token
+    type: command
+    command: vault token lookup -format=json
+    exit_status: 0
+
+  - name: Check authentication methods
+    type: command
+    command: vault auth list -format=json
+    exit_status: 0
+
+  # Secrets Engine Tests
+  - name: KV secrets engine is enabled
+    type: command
+    command: vault secrets list -format=json | jq -r '.["secret/"].type'
+    exit_status: 0
+    stdout:
+      contains: "kv"
+
+  - name: Write test secret
+    type: command
+    command: vault kv put secret/serverinspect/test value=testing
+    exit_status: 0
+
+  - name: Read test secret
+    type: command
+    command: vault kv get -format=json secret/serverinspect/test | jq -r '.data.data.value'
+    exit_status: 0
+    stdout:
+      contains: "testing"
+
+  - name: List secrets in test path
+    type: command
+    command: vault kv list -format=json secret/serverinspect
+    exit_status: 0
+
+  - name: Delete test secret
+    type: command
+    command: vault kv delete secret/serverinspect/test
+    exit_status: 0
+
+  # User Access Tests
+  - name: Test user can authenticate
+    type: command
+    command: vault login -method=userpass username=testuser password=testpass -format=json
+    exit_status: 0
+
+  - name: Test user can read allowed secret
+    type: command
+    command: vault kv get -format=json secret/app/allowed
+    exit_status: 0
+
+  # Policy Tests
+  - name: List policies
+    type: command
+    command: vault policy list
+    exit_status: 0
+
+  - name: Check if app policy exists
+    type: command
+    command: vault policy read app-policy
+    exit_status: 0
+
+  # Audit and Monitoring
+  - name: Check audit backends
+    type: command
+    command: vault audit list -format=json
+    exit_status: 0
+
+  - name: Vault audit log exists
+    type: file
+    path: /var/log/vault/audit.log
+    exists: true
+
+  - name: Check Vault metrics endpoint
+    type: command
+    command: curl -s http://127.0.0.1:8200/v1/sys/metrics | jq -r '.Gauges[0].Name'
+    exit_status: 0
+
+  # High Availability Tests (if applicable)
+  - name: Check HA status
+    type: command
+    command: vault status -format=json | jq -r '.ha_enabled'
+    exit_status: 0
+
+  - name: Check leader status
+    type: command
+    command: vault status -format=json | jq -r '.leader_address'
+    exit_status: 0
+
+  # Performance and Load Tests
+  - name: Check active token count
+    type: command
+    command: vault token lookup -format=json | jq -r '.data.num_uses'
+    exit_status: 0
+
+  - name: Verify seal type
+    type: command
+    command: vault status -format=json | jq -r '.seal_type'
+    exit_status: 0
+    stdout:
+      contains: "shamir"
+
+# Environment variables for authentication
+environment:
+  variables:
+    VAULT_ADDR: "http://127.0.0.1:8200"
+    VAULT_TOKEN: "{{ vault_root_token }}"

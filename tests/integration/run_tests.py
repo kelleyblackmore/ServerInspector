@@ -28,7 +28,7 @@ DISTRIBUTIONS = {
     "ubuntu": {
         "name": "Ubuntu 24.04",
         "ssh_port": 2201,
-        "container": "serverinspector-ubuntu",
+        "container": "serverinspect-ubuntu",
         "configs": ["common-tests.yaml", "ubuntu-tests.yaml"],
         "package_manager": "apt/dpkg",
         "service_manager": "systemd"
@@ -36,7 +36,7 @@ DISTRIBUTIONS = {
     "debian": {
         "name": "Debian 12",
         "ssh_port": 2202,
-        "container": "serverinspector-debian",
+        "container": "serverinspect-debian",
         "configs": ["common-tests.yaml", "debian-tests.yaml"],
         "package_manager": "apt/dpkg",
         "service_manager": "systemd"
@@ -44,7 +44,7 @@ DISTRIBUTIONS = {
     "fedora": {
         "name": "Fedora 40",
         "ssh_port": 2203,
-        "container": "serverinspector-fedora",
+        "container": "serverinspect-fedora",
         "configs": ["common-tests.yaml", "fedora-tests.yaml"],
         "package_manager": "dnf/rpm",
         "service_manager": "systemd"
@@ -52,7 +52,7 @@ DISTRIBUTIONS = {
     "centos": {
         "name": "CentOS Stream 9",
         "ssh_port": 2204,
-        "container": "serverinspector-centos",
+        "container": "serverinspect-centos",
         "configs": ["common-tests.yaml", "centos-tests.yaml"],
         "package_manager": "dnf/yum/rpm",
         "service_manager": "systemd"
@@ -60,7 +60,7 @@ DISTRIBUTIONS = {
     "alpine": {
         "name": "Alpine 3.19",
         "ssh_port": 2205,
-        "container": "serverinspector-alpine",
+        "container": "serverinspect-alpine",
         "configs": ["common-tests.yaml", "alpine-tests.yaml"],
         "package_manager": "apk",
         "service_manager": "OpenRC"
@@ -68,7 +68,7 @@ DISTRIBUTIONS = {
     "arch": {
         "name": "Arch Linux",
         "ssh_port": 2206,
-        "container": "serverinspector-arch",
+        "container": "serverinspect-arch",
         "configs": ["common-tests.yaml", "arch-tests.yaml"],
         "package_manager": "pacman",
         "service_manager": "systemd"
@@ -76,7 +76,7 @@ DISTRIBUTIONS = {
     "opensuse": {
         "name": "openSUSE Tumbleweed",
         "ssh_port": 2207,
-        "container": "serverinspector-opensuse",
+        "container": "serverinspect-opensuse",
         "configs": ["common-tests.yaml", "opensuse-tests.yaml"],
         "package_manager": "zypper/rpm",
         "service_manager": "systemd"
@@ -109,18 +109,27 @@ class TestRunner:
         try:
             result = subprocess.run(
                 ["docker", "compose", "ps", "--format", "json"],
-                cwd=self.script_dir.parent,
+                cwd=self.script_dir,
                 capture_output=True,
-                text=True,
-                check=True
+                text=True
             )
             
-            containers = json.loads(result.stdout) if result.stdout.strip() else []
+            # Check if command failed (ignore warnings on stderr)
+            if result.returncode != 0 and not result.stdout.strip():
+                console.print(f"[red]❌ Docker command failed: {result.stderr}[/red]")
+                return False
             
-            if not containers:
+            if not result.stdout.strip():
                 console.print("[red]❌ No containers running[/red]")
                 console.print("[yellow]Run: docker compose up -d[/yellow]")
                 return False
+            
+            # Parse container data - handle both single object and array formats
+            container_data = json.loads(result.stdout)
+            if isinstance(container_data, dict):
+                containers = [container_data]
+            else:
+                containers = container_data
             
             running_count = sum(1 for c in containers if c.get("State") == "running")
             console.print(f"[green]✓ {running_count}/{len(DISTRIBUTIONS)} containers running[/green]")
@@ -178,16 +187,16 @@ class TestRunner:
             console.print(f"[red]Config not found: {config_path}[/red]")
             return None
         
-        # Build serverinspector command
+        # Build serverinspect command using the new CLI format
         cmd = [
-            "serverinspector",
-            "--config", str(config_path),
-            "--ssh-host", SSH_CONFIG["hostname"],
-            "--ssh-port", str(dist_info["ssh_port"]),
-            "--ssh-user", SSH_CONFIG["username"],
-            "--ssh-password", SSH_CONFIG["password"],
-            "--format", "json",
-            "--output", "-"  # Output to stdout
+            "serverinspect",
+            "run",
+            str(config_path),
+            "--host", SSH_CONFIG["hostname"],
+            "--port", str(dist_info["ssh_port"]),
+            "--username", SSH_CONFIG["username"],
+            "--password-stdin", SSH_CONFIG["password"],
+            "--output-format", "json"
         ]
         
         try:

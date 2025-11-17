@@ -1,0 +1,90 @@
+---
+# Common tests that should work across all Linux distributions
+title: Common Linux Tests
+description: Basic system tests that work across all distributions
+
+tests:
+  # Common System Information
+  - name: "Hostname Check"
+    type: command
+    command: "hostname"
+    exit_status: 0
+
+  - name: "Kernel Version"
+    type: command
+    command: "uname -r"
+    exit_status: 0
+
+  - name: "System Uptime"
+    type: command
+    command: "uptime"
+    exit_status: 0
+
+  - name: "Current User"
+    type: command
+    command: "whoami"
+    exit_status: 0
+
+  # File System Tests
+  - name: "Test Directory Exists"
+    type: file
+    path: "/opt/test-data"
+    exists: true
+
+  - name: "Test File Exists"
+    type: file
+    path: "/opt/test-data/sample.txt"
+    exists: true
+
+  - name: "Test File Content"
+    type: command
+    command: "grep 'Hello from ServerInspector test suite' /opt/test-data/sample.txt"
+    exit_status: 0
+
+  - name: "Root Directory Exists"
+    type: file
+    path: "/"
+    exists: true
+
+  - name: "Tmp Directory Writable"
+    type: command
+    command: "test -w /tmp && echo 'writable'"
+    exit_status: 0
+
+  # Process Tests
+  - name: "SSH Server Process"
+    type: process
+    process: "sshd"
+    running: true
+
+  # Network Tests
+  - name: "Localhost Resolves"
+    type: command
+    command: "ping -c 1 localhost"
+    exit_status: 0
+
+  - name: "Network Interface Check"
+    type: command
+    command: "ip link show"
+    exit_status: 0
+
+  # Basic Commands
+  - name: "Echo Command"
+    type: command
+    command: "echo 'test'"
+    exit_status: 0
+
+  - name: "Date Command"
+    type: command
+    command: "date"
+    exit_status: 0
+
+  - name: "PS Command"
+    type: command
+    command: "ps aux"
+    exit_status: 0
+
+  - name: "DF Command"
+    type: command
+    command: "df -h"
+    exit_status: 0
