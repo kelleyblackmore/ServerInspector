@@ -1,0 +1,81 @@
+name: Reusable - Build Executable
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: 'Operating system to build for'
+        required: true
+        type: string
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '3.11'
+    outputs:
+      artifact-name:
+        description: 'Name of the uploaded artifact'
+        value: ${{ jobs.build.outputs.artifact }}
+
+jobs:
+  build:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      artifact: ${{ steps.set-name.outputs.name }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Determine platform name
+        id: set-name
+        shell: bash
+        run: |
+          if [[ "${{ inputs.os }}" == *"ubuntu"* ]]; then
+            echo "name=serverinspect-linux" >> $GITHUB_OUTPUT
+            echo "platform=linux" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.os }}" == *"windows"* ]]; then
+            echo "name=serverinspect-windows.exe" >> $GITHUB_OUTPUT
+            echo "platform=windows" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.os }}" == *"macos"* ]]; then
+            echo "name=serverinspect-macos" >> $GITHUB_OUTPUT
+            echo "platform=macos" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build with PyInstaller (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          pyinstaller --onefile --name serverinspect --clean src/main.py \
+            --add-data "src/serverinspect/templates:templates"
+
+      - name: Build with PyInstaller (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pyinstaller --onefile --name serverinspect --clean src/main.py `
+            --add-data "src/serverinspect/templates;templates"
+
+      - name: Rename executable
+        shell: bash
+        run: |
+          cd dist
+          if [ -f "serverinspect" ]; then
+            mv serverinspect ${{ steps.set-name.outputs.name }}
+          elif [ -f "serverinspect.exe" ]; then
+            cp serverinspect.exe ${{ steps.set-name.outputs.name }}
+          fi
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-name.outputs.name }}
+          path: dist/${{ steps.set-name.outputs.name }}

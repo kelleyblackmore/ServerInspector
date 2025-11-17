@@ -1,0 +1,66 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  sbom:
+    name: Generate Software Bill of Materials
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install cyclonedx-bom pip-licenses
+
+      # Generate SBOM in CycloneDX format (industry standard)
+      - name: Generate CycloneDX SBOM
+        run: |
+          cyclonedx-py -o sbom-cyclonedx.json --format json
+          cyclonedx-py -o sbom-cyclonedx.xml --format xml
+
+      # Generate simple license report
+      - name: Generate License Report
+        run: |
+          pip-licenses --format=json --output-file=licenses.json
+          pip-licenses --format=markdown --output-file=licenses.md
+
+      # Upload SBOM as artifact
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-reports
+          path: |
+            sbom-cyclonedx.json
+            sbom-cyclonedx.xml
+            licenses.json
+            licenses.md
+
+      # Attach SBOM to releases
+      - name: Upload SBOM to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            sbom-cyclonedx.json
+            sbom-cyclonedx.xml
+            licenses.md

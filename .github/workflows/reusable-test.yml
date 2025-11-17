@@ -1,0 +1,59 @@
+name: Reusable - Run Tests
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '3.11'
+      os:
+        description: 'Operating system to run on'
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+      upload-coverage:
+        description: 'Whether to upload coverage reports'
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      coverage-percent:
+        description: 'Test coverage percentage'
+        value: ${{ jobs.test.outputs.coverage }}
+
+jobs:
+  test:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      coverage: ${{ steps.coverage.outputs.percent }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Run tests
+        run: pytest --cov=src --cov-report=xml --cov-report=term
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); print(tree.getroot().attrib['line-rate'])")
+          echo "percent=$COVERAGE" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage
+        if: ${{ inputs.upload-coverage }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false

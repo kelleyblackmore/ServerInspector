@@ -1,0 +1,243 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  # Step 1: Run all tests
+  test-matrix:
+    name: Test on ${{ matrix.os }} - Python ${{ matrix.python-version }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.10', '3.11', '3.12']
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      os: ${{ matrix.os }}
+      upload-coverage: false  # Only upload from one job to avoid duplicates
+
+  # Step 2: Upload coverage from single job
+  coverage:
+    name: Upload Test Coverage
+    needs: test-matrix
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: '3.11'
+      os: ubuntu-latest
+      upload-coverage: true
+
+  # Step 3: Security scan (runs in parallel with tests)
+  security:
+    name: Security Scan
+    uses: ./.github/workflows/reusable-security.yml
+    with:
+      severity-threshold: 'HIGH'
+      upload-sarif: true
+
+  # Step 4: Check security results before proceeding
+  security-gate:
+    name: Security Gate
+    needs: security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check vulnerability count
+        run: |
+          VULN_COUNT=${{ needs.security.outputs.vulnerabilities-found }}
+          echo "Found $VULN_COUNT vulnerabilities"
+          if [ "$VULN_COUNT" -gt 10 ]; then
+            echo "::error::Too many vulnerabilities found ($VULN_COUNT). Fix security issues before release."
+            exit 1
+          fi
+
+  # Step 5: Build executables for all platforms
+  build-linux:
+    name: Build Linux Executable
+    needs: [test-matrix, security-gate]
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: ubuntu-latest
+
+  build-windows:
+    name: Build Windows Executable
+    needs: [test-matrix, security-gate]
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: windows-latest
+
+  build-macos:
+    name: Build macOS Executable
+    needs: [test-matrix, security-gate]
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: macos-latest
+
+  # Step 6: Generate SBOM
+  sbom:
+    name: Generate SBOM
+    needs: [test-matrix, security-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install cyclonedx-bom pip-licenses
+
+      - name: Generate SBOM
+        run: |
+          cyclonedx-py -o sbom-cyclonedx.json --format json
+          pip-licenses --format=markdown --output-file=licenses.md
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            sbom-cyclonedx.json
+            licenses.md
+
+  # Step 7: Build Python package
+  build-package:
+    name: Build Python Package
+    needs: [test-matrix, security-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package
+        run: twine check dist/*
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/*
+
+  # Step 8: Create GitHub Release
+  create-release:
+    name: Create GitHub Release
+    needs: [build-linux, build-windows, build-macos, sbom, build-package]
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v${{ steps.version.outputs.version }}
+          tag_name: v${{ steps.version.outputs.version }}
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          generate_release_notes: true
+          files: |
+            release-artifacts/serverinspect-linux/*
+            release-artifacts/serverinspect-windows.exe/*
+            release-artifacts/serverinspect-macos/*
+            release-artifacts/sbom/*
+            release-artifacts/python-package/*
+
+  # Step 9: Publish to PyPI (optional - requires PyPI token)
+  publish-pypi:
+    name: Publish to PyPI
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: github.event.inputs.prerelease != true
+    environment:
+      name: pypi
+      url: https://pypi.org/project/serverinspect/
+    
+    steps:
+      - name: Download package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Requires PYPI_API_TOKEN secret in repository settings
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
+
+  # Step 10: Publish to Test PyPI (always runs)
+  publish-test-pypi:
+    name: Publish to Test PyPI
+    needs: create-release
+    runs-on: ubuntu-latest
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/project/serverinspect/
+    
+    steps:
+      - name: Download package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
