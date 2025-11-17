@@ -1,10 +1,10 @@
 ---
-# ServerInspect Comprehensive Test Configuration
+# serverinspector Comprehensive Test Configuration
 # This example demonstrates all available test types and options
 
 title: "Comprehensive Server Test"
-description: "Tests all available features of ServerInspect"
-author: "ServerInspect Team"
+description: "Tests all available features of serverinspector"
+author: "serverinspector Team"
 version: "1.0"
 
 # Test environment configuration

@@ -1,6 +1,6 @@
-# ServerInspect Installation Guide
+# serverinspector Installation Guide
 
-This document explains the various ways to install ServerInspect.
+This document explains the various ways to install serverinspector.
 
 ## Quick Installation
 
@@ -9,21 +9,21 @@ This document explains the various ways to install ServerInspect.
 Run this command in your terminal:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/\
+curl -sSL https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/\
 install.sh | bash
 ```
 
 or
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/\
+wget -qO- https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/\
 install.sh | bash
 ```
 
 ### Windows
 
 1. Download the [install.bat](https://tinyurl.com/serverinspector) file
-ServerInspector/main/install.bat>) file
+serverinspector/main/install.bat>) file
 2. Right-click and select "Run as administrator" (recommended but not required)
 3. Follow the prompts to install
 
@@ -33,7 +33,7 @@ The installer offers multiple installation methods based on your system:
 
 ### Docker Installation (Recommended if available)
 
-Installs ServerInspect as a Docker container:
+Installs serverinspector as a Docker container:
 
 - Provides an isolated environment
 - Includes all dependencies
@@ -42,17 +42,17 @@ Installs ServerInspect as a Docker container:
 
 ### pipx Installation (Recommended for Python users)
 
-Installs ServerInspect in an isolated Python environment:
+Installs serverinspector in an isolated Python environment:
 
 - Uses pipx to install from GitHub
-- Creates an isolated environment for ServerInspect
+- Creates an isolated environment for serverinspector
 - Avoids dependency conflicts with other packages
 - Makes command-line tools available globally
 - Requires Python 3.6+
 
 ### Python Package Installation
 
-Installs ServerInspect as a Python package:
+Installs serverinspector as a Python package:
 
 - Uses pip to install directly from GitHub
 - Requires Python 3.10 or newer
@@ -82,18 +82,18 @@ If the installers don't work for your system, you can install manually:
 
 ```bash
 # Clone the repository
-git clone https://github.com/kelleyblackmore/ServerInspector.git
-cd ServerInspector
+git clone https://github.com/kelleyblackmore/serverinspector.git
+cd serverinspector
 
 # Build the Docker image
-docker build -t serverinspect .
+docker build -t serverinspector .
 
-# Run ServerInspect
+# Run serverinspector
 docker run -v "$(pwd)/config:/config" \
            -v /etc:/host/etc:ro \
            -v /var/log:/host/var/log:ro \
            -v /proc:/host/proc:ro \
-           serverinspect run /config/example.yaml
+           serverinspector run /config/example.yaml
 ```
 
 ### pipx Manual Installation (Recommended for Python users)
@@ -103,22 +103,22 @@ docker run -v "$(pwd)/config:/config" \
 pip install --user pipx
 python -m pipx ensurepath
 
-# Install ServerInspect with pipx
-pipx install git+https://github.com/kelleyblackmore/ServerInspector.git
+# Install serverinspector with pipx
+pipx install git+https://github.com/kelleyblackmore/serverinspector.git
 
-# Run ServerInspect
-serverinspect --help
+# Run serverinspector
+serverinspector --help
 ```
 
 ### Python Manual Installation
 
 ```bash
 # Install from GitHub
-pip install git+https://github.com/kelleyblackmore/ServerInspector.git
+pip install git+https://github.com/kelleyblackmore/serverinspector.git
 
 # Or clone and install
-git clone https://github.com/kelleyblackmore/ServerInspector.git
-cd ServerInspector
+git clone https://github.com/kelleyblackmore/serverinspector.git
+cd serverinspector
 pip install .
 ```
 
@@ -139,7 +139,7 @@ pip install .
 
 ### Python Installation Issues
 
-- **Python version**: ServerInspect requires Python 3.10+
+- **Python version**: serverinspector requires Python 3.10+
 - **Permission errors**: Try installing with `--user` flag
 - **Missing dependencies**: Check error messages for missing packages
 

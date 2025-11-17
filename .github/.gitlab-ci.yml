@@ -59,10 +59,10 @@ integration:
     - python -m pip install --upgrade pip
     - pip install -e .
     - pip install pyinstaller
-    - pyinstaller serverinspect.spec --clean
+    - pyinstaller serverinspector.spec --clean
     - mkdir -p dist/output
-    - cp dist/serverinspect dist/output/${BINARY_NAME}
-    - cp dist/serverinspect dist/output/${SI_NAME}
+    - cp dist/serverinspector dist/output/${BINARY_NAME}
+    - cp dist/serverinspector dist/output/${SI_NAME}
   artifacts:
     paths:
       - dist/output/
@@ -72,7 +72,7 @@ build:linux:
   <<: *build_def
   image: python:3.11
   variables:
-    BINARY_NAME: serverinspect-linux
+    BINARY_NAME: serverinspector-linux
     SI_NAME: si-linux
 
 # Only run release job for main branch
@@ -90,6 +90,6 @@ release:
     assets:
       links:
         - name: 'Linux Binary'
-          url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/serverinspect-linux?job=build:linux'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/serverinspector-linux?job=build:linux'
         - name: 'Linux Binary (Short name)'
           url: '${CI_PROJECT_URL}/-/jobs/artifacts/main/raw/dist/output/si-linux?job=build:linux'

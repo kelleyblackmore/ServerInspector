@@ -2,7 +2,7 @@
 Unit tests for result types and data structures
 """
 
-from serverinspect.result_types import (
+from serverinspector.result_types import (
     ErrorCode,
     FileCheckResult,
     ResultStatus,

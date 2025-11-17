@@ -1,4 +1,4 @@
-# ServerInspect - Ready-to-use container
+# serverinspector - Ready-to-use container
 FROM python:3.10-slim
 
 # Install system dependencies
@@ -30,7 +30,7 @@ RUN mkdir -p /config && \
 # Modify pyproject.toml to remove test_types reference
 RUN sed -i '/test_types/d' pyproject.toml
 
-# Install serverinspect dependencies directly
+# Install serverinspector dependencies directly
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir click>=8.1.0 jinja2>=3.1.0 paramiko>=3.1.0 \
     psutil>=5.9.0 pyyaml>=6.0.0 rich>=12.0.0
@@ -47,16 +47,16 @@ RUN echo '#!/bin/sh\n\
 if [ "$1" = "shell" ]; then\n\
   exec /bin/bash\n\
 elif [ -z "$1" ]; then\n\
-  echo "ServerInspect Container"\n\
+  echo "serverinspector Container"\n\
   echo "Usage:"\n\
-  echo "  docker run serverinspect run /config/FILE.yaml     # Run checks from a config file"\n\
-  echo "  docker run serverinspect system-info               # Get system information"\n\
-  echo "  docker run serverinspect shell                     # Start interactive shell"\n\
+  echo "  docker run serverinspector run /config/FILE.yaml     # Run checks from a config file"\n\
+  echo "  docker run serverinspector system-info               # Get system information"\n\
+  echo "  docker run serverinspector shell                     # Start interactive shell"\n\
   echo ""\n\
   echo "Available commands:"\n\
-  python -m serverinspect.cli --help\n\
+  python -m serverinspector.cli --help\n\
 else\n\
-  exec python -m serverinspect.cli "$@"\n\
+  exec python -m serverinspector.cli "$@"\n\
 fi' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

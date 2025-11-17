@@ -1,10 +1,10 @@
 ---
-# ServerInspect Remote SSH Test Configuration
+# serverinspector Remote SSH Test Configuration
 
 # General information
 title: Remote Server Test
 description: Tests a remote server via SSH
-author: ServerInspect User
+author: serverinspector User
 
 # Test definitions
 tests:

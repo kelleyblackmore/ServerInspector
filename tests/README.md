@@ -1,6 +1,6 @@
-# ServerInspect Tests
+# serverinspector Tests
 
-This directory contains the test suite for ServerInspect.
+This directory contains the test suite for serverinspector.
 
 ## Test Structure
 
@@ -14,7 +14,7 @@ tests/
 │   ├── test_checkers.py       # Checker modules tests
 │   ├── test_runners.py        # Runner modules tests
 │   ├── test_formatters.py     # Output formatter tests ✅
-│   └── test_core.py           # Core ServerInspect functionality tests ✅
+│   └── test_core.py           # Core serverinspector functionality tests ✅
 └── integration/                # Multi-OS integration tests
     ├── run_tests.py           # Integration test runner
     ├── docker-compose.yml     # Container orchestration
@@ -38,7 +38,7 @@ pytest tests/unit/test_config.py -v
 ### Run With Coverage
 
 ```bash
-pytest tests/unit/ --cov=src/serverinspect --cov-report=html
+pytest tests/unit/ --cov=src/serverinspector --cov-report=html
 ```
 
 ### Run Integration Tests
@@ -64,7 +64,7 @@ cd tests/integration
   - Terminal formatter (50% coverage)
 
 - ✅ **test_core.py** - 6/6 tests passing (90% code coverage)
-  - ServerInspect initialization
+  - serverinspector initialization
   - Test execution flow
   - Output handling
 
@@ -104,7 +104,7 @@ Example:
 Unit tests for my new module
 """
 import pytest
-from serverinspect.mymodule import MyClass
+from serverinspector.mymodule import MyClass
 
 
 class TestMyClass:

@@ -7,10 +7,10 @@ import json
 import pytest
 import yaml
 
-from serverinspect.formatters import get_formatter
-from serverinspect.formatters.json_formatter import JSONFormatter
-from serverinspect.formatters.terminal_formatter import TerminalFormatter
-from serverinspect.formatters.yaml_formatter import YAMLFormatter
+from serverinspector.formatters import get_formatter
+from serverinspector.formatters.json_formatter import JSONFormatter
+from serverinspector.formatters.terminal_formatter import TerminalFormatter
+from serverinspector.formatters.yaml_formatter import YAMLFormatter
 
 
 class TestGetFormatter:

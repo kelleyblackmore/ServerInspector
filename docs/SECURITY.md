@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within ServerInspect, please send an
+If you discover a security vulnerability within serverinspector, please send an
 email to [EMAIL ADDRESS]. All security vulnerabilities will be promptly
 addressed.
 
@@ -87,7 +87,7 @@ bandit -r src/ -f json -o security-results.json
 
 ## Security Best Practices
 
-When contributing to ServerInspect, please follow these security best practices:
+When contributing to serverinspector, please follow these security best practices:
 
 1. **No hardcoded secrets** - Use environment variables for sensitive data
 2. **Input validation** - Validate all user inputs

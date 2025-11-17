@@ -1,3 +1,3 @@
 """
-Unit tests for ServerInspect core modules
+Unit tests for serverinspector core modules
 """

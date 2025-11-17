@@ -1,10 +1,10 @@
 ---
-# ServerInspect Test Configuration
+# serverinspector Test Configuration
 
 # General information
 title: Basic Server Test
 description: Tests basic server functionality and configuration
-author: ServerInspect User
+author: serverinspector User
 
 # Test definitions
 tests:

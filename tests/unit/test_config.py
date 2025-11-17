@@ -5,7 +5,7 @@ Unit tests for configuration loading and validation
 import pytest
 import yaml
 
-from serverinspect.config import load_config, process_variables
+from serverinspector.config import load_config, process_variables
 
 
 class TestConfigLoading:

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Setup script for security tools in ServerInspect
+# Setup script for security tools in serverinspector
 
 set -e
 
@@ -9,7 +9,7 @@ YELLOW="\033[0;33m"
 RED="\033[0;31m"
 RESET="\033[0m"
 
-echo -e "${BOLD}Setting up security tools for ServerInspect${RESET}"
+echo -e "${BOLD}Setting up security tools for serverinspector${RESET}"
 echo "=========================================="
 echo ""
 

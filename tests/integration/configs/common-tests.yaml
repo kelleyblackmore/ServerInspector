@@ -47,7 +47,7 @@ test_groups:
         type: file
         path: "/opt/test-data/sample.txt"
         expected: contains
-        pattern: "Hello from ServerInspector test suite"
+        pattern: "Hello from serverinspector test suite"
         description: "Verify test file has expected content"
 
       - name: "Root Directory Exists"

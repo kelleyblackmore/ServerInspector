@@ -38,7 +38,7 @@ tests:
 
   - name: "Test File Content"
     type: command
-    command: "grep 'Hello from ServerInspector test suite' /opt/test-data/sample.txt"
+    command: "grep 'Hello from serverinspector test suite' /opt/test-data/sample.txt"
     exit_status: 0
 
   - name: "Root Directory Exists"

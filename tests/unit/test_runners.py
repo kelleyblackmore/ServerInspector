@@ -4,8 +4,8 @@ Unit tests for runner modules
 
 from unittest.mock import Mock, patch
 
-from serverinspect.runners import get_runner
-from serverinspect.runners.local import LocalRunner
+from serverinspector.runners import get_runner
+from serverinspector.runners.local import LocalRunner
 
 
 class TestGetRunner:
@@ -23,7 +23,7 @@ class TestGetRunner:
 
         assert isinstance(runner, LocalRunner)
 
-    @patch("serverinspect.runners.ssh.SSHRunner")
+    @patch("serverinspector.runners.ssh.SSHRunner")
     def test_get_ssh_runner(self, mock_ssh_runner_class):
         """Test getting an SSH runner when host is specified."""
         mock_instance = Mock()

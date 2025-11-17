@@ -1,39 +1,39 @@
 """
-Unit tests for core ServerInspect functionality
+Unit tests for core serverinspector functionality
 """
 
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from serverinspect.core import ServerInspect
+from serverinspector.core import serverinspector
 
 
-class TestServerInspectInit:
-    """Test ServerInspect initialization."""
+class TestserverinspectorInit:
+    """Test serverinspector initialization."""
 
-    @patch("serverinspect.core.get_runner")
+    @patch("serverinspector.core.get_runner")
     def test_init_local(self, mock_get_runner):
         """Test initialization for local execution."""
         mock_runner = Mock()
         mock_get_runner.return_value = mock_runner
 
         config = {"tests": []}
-        inspector = ServerInspect(config=config)
+        inspector = serverinspector(config=config)
 
         assert inspector.config == config
         assert inspector.host is None
         assert inspector.runner == mock_runner
         mock_get_runner.assert_called_once_with(None, 22, None, None, None)
 
-    @patch("serverinspect.core.get_runner")
+    @patch("serverinspector.core.get_runner")
     def test_init_remote_ssh(self, mock_get_runner):
         """Test initialization for remote SSH execution."""
         mock_runner = Mock()
         mock_get_runner.return_value = mock_runner
 
         config = {"tests": []}
-        inspector = ServerInspect(
+        inspector = serverinspector(
             config=config,
             host="example.com",
             port=2222,
@@ -49,11 +49,11 @@ class TestServerInspectInit:
         )
 
 
-class TestServerInspectRunTests:
-    """Test ServerInspect test execution."""
+class TestserverinspectorRunTests:
+    """Test serverinspector test execution."""
 
-    @patch("serverinspect.core.get_runner")
-    @patch("serverinspect.core.collect_system_info")
+    @patch("serverinspector.core.get_runner")
+    @patch("serverinspector.core.collect_system_info")
     def test_run_tests_success(self, mock_collect_info, mock_get_runner):
         """Test successful test execution."""
         # Setup mocks
@@ -74,12 +74,12 @@ class TestServerInspectRunTests:
             ],
         }
 
-        with patch("serverinspect.core.get_checker") as mock_get_checker:
+        with patch("serverinspector.core.get_checker") as mock_get_checker:
             mock_checker_module = Mock()
             mock_checker_module.check.return_value = {"success": True, "message": "OK"}
             mock_get_checker.return_value = mock_checker_module
 
-            inspector = ServerInspect(config=config)
+            inspector = serverinspector(config=config)
             results = inspector.run_tests()
 
             # Verify results structure
@@ -88,8 +88,8 @@ class TestServerInspectRunTests:
             assert results["title"] == "Test Suite"
             assert results["summary"]["total"] == 1
 
-    @patch("serverinspect.core.get_runner")
-    @patch("serverinspect.core.collect_system_info")
+    @patch("serverinspector.core.get_runner")
+    @patch("serverinspector.core.collect_system_info")
     def test_run_tests_with_failures(self, mock_collect_info, mock_get_runner):
         """Test execution with some failing tests."""
         mock_runner = Mock()
@@ -103,7 +103,7 @@ class TestServerInspectRunTests:
             ]
         }
 
-        with patch("serverinspect.core.get_checker") as mock_get_checker:
+        with patch("serverinspector.core.get_checker") as mock_get_checker:
             mock_checker_module = Mock()
             # Return pass then fail
             mock_checker_module.check.side_effect = [
@@ -112,25 +112,25 @@ class TestServerInspectRunTests:
             ]
             mock_get_checker.return_value = mock_checker_module
 
-            inspector = ServerInspect(config=config)
+            inspector = serverinspector(config=config)
             results = inspector.run_tests()
 
             assert results["summary"]["total"] == 2
 
-    @patch("serverinspect.core.get_runner")
+    @patch("serverinspector.core.get_runner")
     def test_run_tests_no_config(self, mock_get_runner):
         """Test that run_tests raises error with no tests."""
         mock_runner = Mock()
         mock_get_runner.return_value = mock_runner
 
-        inspector = ServerInspect(config={})
+        inspector = serverinspector(config={})
 
         with pytest.raises(ValueError, match="No tests defined"):
             inspector.run_tests()
 
-    @patch("serverinspect.core.get_runner")
-    @patch("serverinspect.core.collect_system_info")
-    @patch("serverinspect.core.get_checker")
+    @patch("serverinspector.core.get_runner")
+    @patch("serverinspector.core.collect_system_info")
+    @patch("serverinspector.core.get_checker")
     def test_run_tests_handles_exceptions(
         self, mock_get_checker, mock_collect_info, mock_get_runner
     ):
@@ -145,7 +145,7 @@ class TestServerInspectRunTests:
         mock_get_checker.return_value = mock_checker
 
         config = {"tests": [{"name": "Test", "type": "command"}]}
-        inspector = ServerInspect(config=config)
+        inspector = serverinspector(config=config)
 
         results = inspector.run_tests()
 
@@ -155,11 +155,11 @@ class TestServerInspectRunTests:
         assert "error" in results["tests"][0]
 
 
-class TestServerInspectOutputResults:
+class TestserverinspectorOutputResults:
     """Test result output functionality."""
 
-    @patch("serverinspect.core.get_runner")
-    @patch("serverinspect.core.get_formatter")
+    @patch("serverinspector.core.get_runner")
+    @patch("serverinspector.core.get_formatter")
     def test_output_to_stdout(self, mock_get_formatter, mock_get_runner):
         """Test outputting results to stdout."""
         mock_runner = Mock()
@@ -169,7 +169,7 @@ class TestServerInspectOutputResults:
         mock_formatter.format.return_value = "formatted output"
         mock_get_formatter.return_value = mock_formatter
 
-        inspector = ServerInspect(config={"tests": []})
+        inspector = serverinspector(config={"tests": []})
         results = {"tests": []}
 
         inspector.output_results(results, format="json")
@@ -177,8 +177,8 @@ class TestServerInspectOutputResults:
         mock_get_formatter.assert_called_once_with("json")
         mock_formatter.format.assert_called_once_with(results)
 
-    @patch("serverinspect.core.get_runner")
-    @patch("serverinspect.core.get_formatter")
+    @patch("serverinspector.core.get_runner")
+    @patch("serverinspector.core.get_formatter")
     @patch("builtins.open", create=True)
     def test_output_to_file(self, mock_open, mock_get_formatter, mock_get_runner):
         """Test outputting results to a file."""
@@ -192,7 +192,7 @@ class TestServerInspectOutputResults:
         mock_file = MagicMock()
         mock_open.return_value.__enter__.return_value = mock_file
 
-        inspector = ServerInspect(config={"tests": []})
+        inspector = serverinspector(config={"tests": []})
         results = {"tests": []}
 
         inspector.output_results(

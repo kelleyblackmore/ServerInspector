@@ -14,9 +14,9 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
 
-from serverinspect.package_managers import get_registry
-from serverinspect.runners.local import LocalRunner
-from serverinspect.service_managers import get_service_status
+from serverinspector.package_managers import get_registry
+from serverinspector.runners.local import LocalRunner
+from serverinspector.service_managers import get_service_status
 
 console = Console()
 
@@ -154,7 +154,7 @@ def test_backward_compatibility():
 if __name__ == "__main__":
     console.print(
         Panel.fit(
-            "[bold green]ServerInspect Enhanced Features Demo[/bold green]\n"
+            "[bold green]serverinspector Enhanced Features Demo[/bold green]\n"
             "Testing package manager registry and enhanced service status",
             border_style="green",
         )

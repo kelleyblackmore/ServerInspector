@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ServerInspect - A Python-based server inspection and testing tool.
+serverinspector - A Python-based server inspection and testing tool.
 
 Similar to InSpec, Goss, and ServerSpec, this tool allows you to define,
 run, and report on server tests and audits.
@@ -9,7 +9,7 @@ run, and report on server tests and audits.
 import sys
 from pathlib import Path
 
-from serverinspect.cli import cli
+from serverinspector.cli import cli
 
 # Add the src directory to the Python path if it's not already there
 src_dir = str(Path(__file__).resolve().parent)

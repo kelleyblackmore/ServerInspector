@@ -1,6 +1,6 @@
-# ServerInspect Scripts
+# serverinspector Scripts
 
-This directory contains utility scripts for building, installing, and running ServerInspect.
+This directory contains utility scripts for building, installing, and running serverinspector.
 
 ## Directory Structure
 
@@ -19,8 +19,8 @@ Installation scripts for various platforms:
 
 ## Other Scripts
 
-- `docker-build.sh` - Build Docker image for ServerInspect
-- `docker-run.sh` - Quick start script for running ServerInspect in Docker
+- `docker-build.sh` - Build Docker image for serverinspector
+- `docker-run.sh` - Quick start script for running serverinspector in Docker
 - `setup_security.sh` - Security configuration setup script
 
 ## Usage

@@ -14,9 +14,9 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 
 # Install the package in development mode
-echo "Installing ServerInspect in development mode..."
+echo "Installing serverinspector in development mode..."
 pip install -e .
 
 echo "Installation complete."
 echo "To activate the virtual environment, run: source venv/bin/activate"
-echo "Then you can run 'serverinspect' commands."
+echo "Then you can run 'serverinspector' commands."

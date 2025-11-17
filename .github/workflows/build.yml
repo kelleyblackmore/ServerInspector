@@ -17,16 +17,16 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest
-            exec_name: serverinspect-linux
-            asset_name: serverinspect-linux
+            exec_name: serverinspector-linux
+            asset_name: serverinspector-linux
             si_name: si-linux
           - os: windows-latest
-            exec_name: serverinspect.exe
-            asset_name: serverinspect-windows.exe
+            exec_name: serverinspector.exe
+            asset_name: serverinspector-windows.exe
             si_name: si-windows.exe
           - os: macos-latest
-            exec_name: serverinspect-macos
-            asset_name: serverinspect-macos
+            exec_name: serverinspector-macos
+            asset_name: serverinspector-macos
             si_name: si-macos
 
     steps:
@@ -54,35 +54,35 @@ jobs:
       - name: Build with PyInstaller (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          pyinstaller --onefile --name serverinspect --clean src/main.py --add-data "src/serverinspect/templates:templates"
+          pyinstaller --onefile --name serverinspector --clean src/main.py --add-data "src/serverinspector/templates:templates"
 
       - name: Build with PyInstaller (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          pyinstaller --onefile --name serverinspect --clean src/main.py --add-data "src/serverinspect/templates;templates"
+          pyinstaller --onefile --name serverinspector --clean src/main.py --add-data "src/serverinspector/templates;templates"
 
       - name: Build with PyInstaller (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          pyinstaller --onefile --name serverinspect --clean src/main.py --add-data "src/serverinspect/templates:templates"
+          pyinstaller --onefile --name serverinspector --clean src/main.py --add-data "src/serverinspector/templates:templates"
 
       # Rename the output file based on OS
       - name: Rename executable (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          mv dist/serverinspect dist/${{ matrix.asset_name }}
+          mv dist/serverinspector dist/${{ matrix.asset_name }}
           cp dist/${{ matrix.asset_name }} dist/${{ matrix.si_name }}
 
       - name: Rename executable (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          mv dist/serverinspect dist/${{ matrix.asset_name }}
+          mv dist/serverinspector dist/${{ matrix.asset_name }}
           cp dist/${{ matrix.asset_name }} dist/${{ matrix.si_name }}
 
       - name: Rename executable (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cp dist/serverinspect.exe dist/${{ matrix.si_name }}
+          cp dist/serverinspector.exe dist/${{ matrix.si_name }}
 
       # Upload the executable as an artifact
       - name: Upload executable (full name)
@@ -122,24 +122,24 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/serverinspect-linux/serverinspect-linux
-            artifacts/serverinspect-windows.exe/serverinspect-windows.exe
-            artifacts/serverinspect-macos/serverinspect-macos
+            artifacts/serverinspector-linux/serverinspector-linux
+            artifacts/serverinspector-windows.exe/serverinspector-windows.exe
+            artifacts/serverinspector-macos/serverinspector-macos
             artifacts/si-linux/si-linux
             artifacts/si-windows.exe/si-windows.exe
             artifacts/si-macos/si-macos
           name: Release ${{ github.ref_name }}
           body: |
-            ## ServerInspect ${{ github.ref_name }}
+            ## serverinspector ${{ github.ref_name }}
 
             ### Changes
             - See commit history for changes
 
             ### Downloads
             #### Full Name:
-            - [Linux](serverinspect-linux)
-            - [Windows](serverinspect-windows.exe)
-            - [macOS](serverinspect-macos)
+            - [Linux](serverinspector-linux)
+            - [Windows](serverinspector-windows.exe)
+            - [macOS](serverinspector-macos)
 
             #### Short Name (si):
             - [Linux](si-linux)
@@ -148,7 +148,7 @@ jobs:
 
             ### Quick Install
             ```bash
-            curl -sSL https://raw.githubusercontent.com/yourusername/ServerInspector/main/scripts/install/install.sh | bash
+            curl -sSL https://raw.githubusercontent.com/yourusername/serverinspector/main/scripts/install/install.sh | bash
             ```
 
       # If this is a main/master branch push (not a tag)
@@ -159,9 +159,9 @@ jobs:
           gh release create latest \
             --title "Latest Build" \
             --notes "This is the latest build from the main branch. It may not be stable." \
-            artifacts/serverinspect-linux/serverinspect-linux \
-            artifacts/serverinspect-windows.exe/serverinspect-windows.exe \
-            artifacts/serverinspect-macos/serverinspect-macos \
+            artifacts/serverinspector-linux/serverinspector-linux \
+            artifacts/serverinspector-windows.exe/serverinspector-windows.exe \
+            artifacts/serverinspector-macos/serverinspector-macos \
             artifacts/si-linux/si-linux \
             artifacts/si-windows.exe/si-windows.exe \
             artifacts/si-macos/si-macos

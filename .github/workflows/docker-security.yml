@@ -33,16 +33,16 @@ jobs:
 
       # Build Docker images for scanning
       - name: Build main Dockerfile
-        run: docker build -f docker/Dockerfile -t serverinspect:test docker/
+        run: docker build -f docker/Dockerfile -t serverinspector:test docker/
 
       - name: Build build Dockerfile
-        run: docker build -f docker/Dockerfile.build -t serverinspect:build docker/
+        run: docker build -f docker/Dockerfile.build -t serverinspector:build docker/
 
       # Scan with Trivy (comprehensive vulnerability scanner)
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'serverinspect:test'
+          image-ref: 'serverinspector:test'
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH,MEDIUM'
@@ -56,7 +56,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (table output)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'serverinspect:test'
+          image-ref: 'serverinspector:test'
           format: 'table'
           severity: 'CRITICAL,HIGH'
 
@@ -66,7 +66,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           command: cves
-          image: serverinspect:test
+          image: serverinspector:test
           sarif-file: scout-results.sarif
           summary: true
 
@@ -92,7 +92,7 @@ jobs:
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v $(pwd):/output \
             anchore/syft:latest \
-            packages docker:serverinspect:test -o cyclonedx-json=/output/docker-sbom.json
+            packages docker:serverinspector:test -o cyclonedx-json=/output/docker-sbom.json
 
       - name: Upload Docker SBOM
         uses: actions/upload-artifact@v4

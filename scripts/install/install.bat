@@ -1,8 +1,8 @@
 @echo off
-:: ServerInspect Windows Installer
-:: This script detects your environment and installs ServerInspect
+:: serverinspector Windows Installer
+:: This script detects your environment and installs serverinspector
 
-echo ServerInspect Windows Installer
+echo serverinspector Windows Installer
 echo ===============================
 echo.
 
@@ -188,39 +188,39 @@ exit /b 0
 
 :install_docker
     echo Creating installation directory...
-    if not exist "%USERPROFILE%\serverinspect" mkdir "%USERPROFILE%\serverinspect"
-    cd /d "%USERPROFILE%\serverinspect"
+    if not exist "%USERPROFILE%\serverinspector" mkdir "%USERPROFILE%\serverinspector"
+    cd /d "%USERPROFILE%\serverinspector"
 
     echo Downloading Docker configuration...
-    powershell -Command "& {Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/Dockerfile' -OutFile 'Dockerfile'}"
+    powershell -Command "& {Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/Dockerfile' -OutFile 'Dockerfile'}"
     if %errorLevel% neq 0 (
         echo Error downloading Dockerfile.
         exit /b 1
     )
 
     echo Building Docker image...
-    docker build -t serverinspect .
+    docker build -t serverinspector .
 
     echo Creating wrapper batch file...
     (
         echo @echo off
-        echo docker run -v "%%USERPROFILE%%\serverinspect\config:/config" ^
+        echo docker run -v "%%USERPROFILE%%\serverinspector\config:/config" ^
         echo            -v /etc:/host/etc:ro ^
         echo            -v /var/log:/host/var/log:ro ^
         echo            -v /proc:/host/proc:ro ^
-        echo            serverinspect %%*
-    ) > serverinspect.bat
+        echo            serverinspector %%*
+    ) > serverinspector.bat
 
     if not exist config mkdir config
 
     echo.
     echo Docker installation successful!
     echo.
-    echo You can now use ServerInspect with:
-    echo   %USERPROFILE%\serverinspect\serverinspect.bat run /config/simple-test.yaml
+    echo You can now use serverinspector with:
+    echo   %USERPROFILE%\serverinspector\serverinspector.bat run /config/simple-test.yaml
     echo.
     echo To add it to your PATH, run the following in an administrator command prompt:
-    echo   setx PATH "%%PATH%%;%USERPROFILE%\serverinspect"
+    echo   setx PATH "%%PATH%%;%USERPROFILE%\serverinspector"
     exit /b 0
 
 :install_pipx
@@ -241,39 +241,39 @@ exit /b 0
     )
 
     :: Check if we're already in the repository
-    if exist "pyproject.toml" if exist "src\serverinspect" (
+    if exist "pyproject.toml" if exist "src\serverinspector" (
         echo Detected existing repository.
 
         echo Fixing package configuration...
-        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspect.test_types', '' | Set-Content pyproject.toml}"
+        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspector.test_types', '' | Set-Content pyproject.toml}"
 
         echo Creating missing directory...
-        if not exist "src\serverinspect\test_types" mkdir "src\serverinspect\test_types"
+        if not exist "src\serverinspector\test_types" mkdir "src\serverinspector\test_types"
 
         echo Installing with pipx...
         pipx install .
     ) else (
         echo Creating temporary directory...
-        set TEMP_DIR=%TEMP%\serverinspect_install_%RANDOM%
+        set TEMP_DIR=%TEMP%\serverinspector_install_%RANDOM%
         mkdir "%TEMP_DIR%"
         cd /d "%TEMP_DIR%"
 
         echo Cloning repository...
         if %HAS_GIT% == 1 (
-            git clone https://github.com/kelleyblackmore/ServerInspector.git .
+            git clone https://github.com/kelleyblackmore/serverinspector.git .
         ) else (
             echo Downloading source archive...
-            powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/kelleyblackmore/ServerInspector/archive/main.zip' -OutFile 'serverinspect.zip'}"
+            powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/kelleyblackmore/serverinspector/archive/main.zip' -OutFile 'serverinspector.zip'}"
             echo Extracting archive...
-            powershell -Command "& {Expand-Archive -Path 'serverinspect.zip' -DestinationPath .}"
-            cd ServerInspector-main
+            powershell -Command "& {Expand-Archive -Path 'serverinspector.zip' -DestinationPath .}"
+            cd serverinspector-main
         )
 
         echo Fixing package configuration...
-        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspect.test_types', '' | Set-Content pyproject.toml}"
+        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspector.test_types', '' | Set-Content pyproject.toml}"
 
         echo Creating missing directory...
-        mkdir src\serverinspect\test_types
+        mkdir src\serverinspector\test_types
 
         echo Installing with pipx...
         pipx install .
@@ -286,8 +286,8 @@ exit /b 0
     echo.
     echo pipx installation successful!
     echo.
-    echo You can now use ServerInspect with:
-    echo   serverinspect --help
+    echo You can now use serverinspector with:
+    echo   serverinspector --help
     exit /b 0
 
 :install_pip
@@ -299,39 +299,39 @@ exit /b 0
     )
 
     :: Check if we're already in the repository
-    if exist "pyproject.toml" if exist "src\serverinspect" (
+    if exist "pyproject.toml" if exist "src\serverinspector" (
         echo Detected existing repository.
 
         echo Fixing package configuration...
-        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspect.test_types', '' | Set-Content pyproject.toml}"
+        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspector.test_types', '' | Set-Content pyproject.toml}"
 
         echo Creating missing directory...
-        if not exist "src\serverinspect\test_types" mkdir "src\serverinspect\test_types"
+        if not exist "src\serverinspector\test_types" mkdir "src\serverinspector\test_types"
 
         echo Installing with pip...
         pip install .
     ) else (
         echo Creating temporary directory...
-        set TEMP_DIR=%TEMP%\serverinspect_install_%RANDOM%
+        set TEMP_DIR=%TEMP%\serverinspector_install_%RANDOM%
         mkdir "%TEMP_DIR%"
         cd /d "%TEMP_DIR%"
 
         echo Cloning repository...
         if %HAS_GIT% == 1 (
-            git clone https://github.com/kelleyblackmore/ServerInspector.git .
+            git clone https://github.com/kelleyblackmore/serverinspector.git .
         ) else (
             echo Downloading source archive...
-            powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/kelleyblackmore/ServerInspector/archive/main.zip' -OutFile 'serverinspect.zip'}"
+            powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/kelleyblackmore/serverinspector/archive/main.zip' -OutFile 'serverinspector.zip'}"
             echo Extracting archive...
-            powershell -Command "& {Expand-Archive -Path 'serverinspect.zip' -DestinationPath .}"
-            cd ServerInspector-main
+            powershell -Command "& {Expand-Archive -Path 'serverinspector.zip' -DestinationPath .}"
+            cd serverinspector-main
         )
 
         echo Fixing package configuration...
-        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspect.test_types', '' | Set-Content pyproject.toml}"
+        powershell -Command "& {(Get-Content pyproject.toml) -replace 'serverinspector.test_types', '' | Set-Content pyproject.toml}"
 
         echo Creating missing directory...
-        mkdir src\serverinspect\test_types
+        mkdir src\serverinspector\test_types
 
         echo Installing with pip...
         pip install .
@@ -344,27 +344,27 @@ exit /b 0
     echo.
     echo Python installation successful!
     echo.
-    echo You can now use ServerInspect with:
-    echo   serverinspect --help
+    echo You can now use serverinspector with:
+    echo   serverinspector --help
     exit /b 0
 
 :install_exe
     echo Downloading executable...
-    if not exist "%USERPROFILE%\serverinspect" mkdir "%USERPROFILE%\serverinspect"
-    cd /d "%USERPROFILE%\serverinspect"
+    if not exist "%USERPROFILE%\serverinspector" mkdir "%USERPROFILE%\serverinspector"
+    cd /d "%USERPROFILE%\serverinspector"
 
-    powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/kelleyblackmore/ServerInspector/releases/latest/download/serverinspect-windows.exe' -OutFile 'serverinspect.exe'}"
+    powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/kelleyblackmore/serverinspector/releases/latest/download/serverinspector-windows.exe' -OutFile 'serverinspector.exe'}"
     if %errorLevel% neq 0 (
         echo Error downloading executable.
         exit /b 1
     )
 
     echo.
-    echo Downloaded executable to %USERPROFILE%\serverinspect\serverinspect.exe
+    echo Downloaded executable to %USERPROFILE%\serverinspector\serverinspector.exe
     echo.
-    echo You can now use ServerInspect with:
-    echo   %USERPROFILE%\serverinspect\serverinspect.exe --help
+    echo You can now use serverinspector with:
+    echo   %USERPROFILE%\serverinspector\serverinspector.exe --help
     echo.
     echo To add it to your PATH, run the following in an administrator command prompt:
-    echo   setx PATH "%%PATH%%;%USERPROFILE%\serverinspect"
+    echo   setx PATH "%%PATH%%;%USERPROFILE%\serverinspector"
     exit /b 0

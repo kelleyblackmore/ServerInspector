@@ -1,10 +1,10 @@
-# ServerInspect Docker Files
+# serverinspector Docker Files
 
-This directory contains Docker-related files for building and running ServerInspect in containers.
+This directory contains Docker-related files for building and running serverinspector in containers.
 
 ## Files
 
-- **Dockerfile** - Main Dockerfile for running ServerInspect
+- **Dockerfile** - Main Dockerfile for running serverinspector
 - **Dockerfile.build** - Multi-platform build environment for creating executables
 - **docker-compose.yml** - Docker Compose configuration for easy deployment
 - **README-docker.md** - Detailed Docker usage documentation
@@ -14,7 +14,7 @@ This directory contains Docker-related files for building and running ServerInsp
 ### Build the Docker Image
 
 ```bash
-docker build -t serverinspect:latest -f docker/Dockerfile .
+docker build -t serverinspector:latest -f docker/Dockerfile .
 ```
 
 Or use the convenience script:
@@ -27,13 +27,13 @@ bash scripts/docker-build.sh
 
 ```bash
 # Run a test configuration
-docker run -v $(pwd)/config:/config serverinspect run /config/example.yaml
+docker run -v $(pwd)/config:/config serverinspector run /config/example.yaml
 
 # Collect system information
-docker run serverinspect system-info
+docker run serverinspector system-info
 
 # Perform a quick check
-docker run serverinspect check file /etc/hosts --exists
+docker run serverinspector check file /etc/hosts --exists
 ```
 
 ### Using Docker Compose

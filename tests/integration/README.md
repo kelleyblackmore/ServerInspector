@@ -1,10 +1,10 @@
 # Integration Tests
 
-This directory contains a comprehensive multi-OS integration test suite for ServerInspector.
+This directory contains a comprehensive multi-OS integration test suite for serverinspector.
 
 ## Overview
 
-The test suite validates ServerInspector functionality across 7 different Linux distributions:
+The test suite validates serverinspector functionality across 7 different Linux distributions:
 
 - **Ubuntu 24.04** - apt/dpkg + systemd
 - **Debian 12** - apt/dpkg + systemd  
@@ -186,7 +186,7 @@ docker compose ps --format json | jq '.[].Health'
 
 ### Tests failing
 ```bash
-# Run ServerInspector manually against a container
+# Run serverinspector manually against a container
 serverinspector \
   --config configs/ubuntu-tests.yaml \
   --ssh-host localhost \
@@ -300,4 +300,4 @@ Factors affecting speed:
 
 ## License
 
-Same as ServerInspector project.
+Same as serverinspector project.

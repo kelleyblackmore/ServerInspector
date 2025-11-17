@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Integration test runner for ServerInspect.
+Integration test runner for serverinspector.
 Tests the tool against multiple containerized distributions.
 """
 
@@ -23,7 +23,7 @@ DISTRIBUTIONS = {
     "ubuntu": {
         "name": "Ubuntu 24.04",
         "ssh_port": 2201,
-        "container": "serverinspect-ubuntu",
+        "container": "serverinspector-ubuntu",
         "configs": ["common-tests.yaml", "ubuntu-tests.yaml"],
         "package_manager": "apt/dpkg",
         "service_manager": "systemd",
@@ -31,7 +31,7 @@ DISTRIBUTIONS = {
     "debian": {
         "name": "Debian 12",
         "ssh_port": 2202,
-        "container": "serverinspect-debian",
+        "container": "serverinspector-debian",
         "configs": ["common-tests.yaml", "debian-tests.yaml"],
         "package_manager": "apt/dpkg",
         "service_manager": "systemd",
@@ -39,7 +39,7 @@ DISTRIBUTIONS = {
     "fedora": {
         "name": "Fedora 40",
         "ssh_port": 2203,
-        "container": "serverinspect-fedora",
+        "container": "serverinspector-fedora",
         "configs": ["common-tests.yaml", "fedora-tests.yaml"],
         "package_manager": "dnf/rpm",
         "service_manager": "systemd",
@@ -47,7 +47,7 @@ DISTRIBUTIONS = {
     "centos": {
         "name": "CentOS Stream 9",
         "ssh_port": 2204,
-        "container": "serverinspect-centos",
+        "container": "serverinspector-centos",
         "configs": ["common-tests.yaml", "centos-tests.yaml"],
         "package_manager": "dnf/yum/rpm",
         "service_manager": "systemd",
@@ -55,7 +55,7 @@ DISTRIBUTIONS = {
     "alpine": {
         "name": "Alpine 3.19",
         "ssh_port": 2205,
-        "container": "serverinspect-alpine",
+        "container": "serverinspector-alpine",
         "configs": ["common-tests.yaml", "alpine-tests.yaml"],
         "package_manager": "apk",
         "service_manager": "OpenRC",
@@ -63,7 +63,7 @@ DISTRIBUTIONS = {
     "arch": {
         "name": "Arch Linux",
         "ssh_port": 2206,
-        "container": "serverinspect-arch",
+        "container": "serverinspector-arch",
         "configs": ["common-tests.yaml", "arch-tests.yaml"],
         "package_manager": "pacman",
         "service_manager": "systemd",
@@ -71,7 +71,7 @@ DISTRIBUTIONS = {
     "opensuse": {
         "name": "openSUSE Tumbleweed",
         "ssh_port": 2207,
-        "container": "serverinspect-opensuse",
+        "container": "serverinspector-opensuse",
         "configs": ["common-tests.yaml", "opensuse-tests.yaml"],
         "package_manager": "zypper/rpm",
         "service_manager": "systemd",
@@ -82,7 +82,7 @@ SSH_CONFIG = {"username": "testuser", "password": "testpass", "hostname": "local
 
 
 class TestRunner:
-    """Orchestrates running ServerInspector tests against multiple distributions."""
+    """Orchestrates running serverinspector tests against multiple distributions."""
 
     def __init__(self, script_dir: Path):
         self.script_dir = script_dir
@@ -170,7 +170,7 @@ class TestRunner:
     def run_serverinspector_test(
         self, dist_key: str, config_file: str
     ) -> Optional[Dict[str, Any]]:
-        """Run ServerInspector against a specific distribution."""
+        """Run serverinspector against a specific distribution."""
         dist_info = DISTRIBUTIONS[dist_key]
         config_path = self.config_dir / config_file
 
@@ -178,9 +178,9 @@ class TestRunner:
             console.print(f"[red]Config not found: {config_path}[/red]")
             return None
 
-        # Build serverinspect command using the new CLI format
+        # Build serverinspector command using the new CLI format
         cmd = [
-            "serverinspect",
+            "serverinspector",
             "run",
             str(config_path),
             "--host",
@@ -308,7 +308,7 @@ class TestRunner:
 
         console.print(
             Panel.fit(
-                "[bold]ServerInspector Multi-OS Integration Test Suite[/bold]\n"
+                "[bold]serverinspector Multi-OS Integration Test Suite[/bold]\n"
                 f"Testing {len(distributions)} distributions",
                 border_style="blue",
             )
@@ -419,7 +419,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Run ServerInspector integration tests against multiple Linux distributions"
+        description="Run serverinspector integration tests against multiple Linux distributions"
     )
     parser.add_argument(
         "--distributions",

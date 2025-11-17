@@ -1,11 +1,11 @@
 version: '3'
 
 services:
-  serverinspect:
+  serverinspector:
     build:
       context: .
       dockerfile: Dockerfile
-    image: serverinspect:latest
+    image: serverinspector:latest
     volumes:
       # Mount host configuration directory
       - ${PWD}/config:/config

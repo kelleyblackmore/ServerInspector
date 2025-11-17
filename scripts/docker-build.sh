@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build the ServerInspect Docker image
+# Build the serverinspector Docker image
 
 set -e
 
@@ -18,12 +18,12 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-echo "Building ServerInspect Docker image..."
-docker build -t serverinspect:latest -f docker/Dockerfile .
+echo "Building serverinspector Docker image..."
+docker build -t serverinspector:latest -f docker/Dockerfile .
 
-echo "Successfully built ServerInspect Docker image"
+echo "Successfully built serverinspector Docker image"
 echo "You can now use it with commands like:"
-echo "  docker run serverinspect check file /etc/hosts --exists"
-echo "  docker run -v $(pwd)/config:/config serverinspect run /config/docker-example.yaml"
+echo "  docker run serverinspector check file /etc/hosts --exists"
+echo "  docker run -v $(pwd)/config:/config serverinspector run /config/docker-example.yaml"
 echo ""
 echo "For more information, see docker/README-docker.md"

@@ -1,6 +1,6 @@
 # GitHub Actions CI/CD Workflows
 
-This directory contains comprehensive CI/CD workflows for ServerInspector, covering testing, security, and release automation.
+This directory contains comprehensive CI/CD workflows for serverinspector, covering testing, security, and release automation.
 
 ## Workflow Overview
 
@@ -73,7 +73,7 @@ This directory contains comprehensive CI/CD workflows for ServerInspector, cover
 **Triggers:** Push to main/master, Version tags (v*), Manual
 - **PyInstaller**: Creates standalone executables
 - **Multi-platform**: Builds for Linux, Windows, macOS
-- **Artifacts**: Uploads both `serverinspect` and `si` binaries
+- **Artifacts**: Uploads both `serverinspector` and `si` binaries
 - **Release Integration**: Attaches executables to GitHub releases
 
 ## Security Dashboard
@@ -107,10 +107,10 @@ graph LR
 Add to README.md:
 
 ```markdown
-![Tests](https://github.com/kelleyblackmore/ServerInspector/workflows/Test/badge.svg)
-![Lint](https://github.com/kelleyblackmore/ServerInspector/workflows/Lint/badge.svg)
-![Security](https://github.com/kelleyblackmore/ServerInspector/workflows/Security%20Scan/badge.svg)
-![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/kelleyblackmore/ServerInspector/badge)
+![Tests](https://github.com/kelleyblackmore/serverinspector/workflows/Test/badge.svg)
+![Lint](https://github.com/kelleyblackmore/serverinspector/workflows/Lint/badge.svg)
+![Security](https://github.com/kelleyblackmore/serverinspector/workflows/Security%20Scan/badge.svg)
+![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/kelleyblackmore/serverinspector/badge)
 ```
 
 ## Required Secrets

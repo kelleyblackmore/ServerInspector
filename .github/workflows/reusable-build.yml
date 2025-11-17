@@ -42,36 +42,36 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ inputs.os }}" == *"ubuntu"* ]]; then
-            echo "name=serverinspect-linux" >> $GITHUB_OUTPUT
+            echo "name=serverinspector-linux" >> $GITHUB_OUTPUT
             echo "platform=linux" >> $GITHUB_OUTPUT
           elif [[ "${{ inputs.os }}" == *"windows"* ]]; then
-            echo "name=serverinspect-windows.exe" >> $GITHUB_OUTPUT
+            echo "name=serverinspector-windows.exe" >> $GITHUB_OUTPUT
             echo "platform=windows" >> $GITHUB_OUTPUT
           elif [[ "${{ inputs.os }}" == *"macos"* ]]; then
-            echo "name=serverinspect-macos" >> $GITHUB_OUTPUT
+            echo "name=serverinspector-macos" >> $GITHUB_OUTPUT
             echo "platform=macos" >> $GITHUB_OUTPUT
           fi
 
       - name: Build with PyInstaller (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          pyinstaller --onefile --name serverinspect --clean src/main.py \
-            --add-data "src/serverinspect/templates:templates"
+          pyinstaller --onefile --name serverinspector --clean src/main.py \
+            --add-data "src/serverinspector/templates:templates"
 
       - name: Build with PyInstaller (Windows)
         if: runner.os == 'Windows'
         run: |
-          pyinstaller --onefile --name serverinspect --clean src/main.py `
-            --add-data "src/serverinspect/templates;templates"
+          pyinstaller --onefile --name serverinspector --clean src/main.py `
+            --add-data "src/serverinspector/templates;templates"
 
       - name: Rename executable
         shell: bash
         run: |
           cd dist
-          if [ -f "serverinspect" ]; then
-            mv serverinspect ${{ steps.set-name.outputs.name }}
-          elif [ -f "serverinspect.exe" ]; then
-            cp serverinspect.exe ${{ steps.set-name.outputs.name }}
+          if [ -f "serverinspector" ]; then
+            mv serverinspector ${{ steps.set-name.outputs.name }}
+          elif [ -f "serverinspector.exe" ]; then
+            cp serverinspector.exe ${{ steps.set-name.outputs.name }}
           fi
 
       - name: Upload executable

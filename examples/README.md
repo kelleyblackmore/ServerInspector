@@ -1,6 +1,6 @@
-# ServerInspect Examples
+# serverinspector Examples
 
-This directory contains examples of ServerInspect configurations and output formats.
+This directory contains examples of serverinspector configurations and output formats.
 
 ## Configuration Examples
 
@@ -42,7 +42,7 @@ To run any of these examples:
 
 ```bash
 # Using the full command
-serverinspect run configs/basic_test.yaml
+serverinspector run configs/basic_test.yaml
 
 # Using the short command
 si run configs/basic_test.yaml
@@ -51,4 +51,4 @@ si run configs/basic_test.yaml
 si run configs/comprehensive_test.yaml --output-format json --output-file my_results.json
 ```
 
-See the main documentation for more information on how to use ServerInspect.
+See the main documentation for more information on how to use serverinspector.

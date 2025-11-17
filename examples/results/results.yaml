@@ -147,7 +147,7 @@ tests:
   result: false
   error: 'Unsupported test type: port'
 title: Comprehensive Server Test
-description: Tests all available features of ServerInspect
+description: Tests all available features of serverinspector
 system_info:
   hostname: DESKTOP-FU6ASJ2
   uname: 'Linux DESKTOP-FU6ASJ2 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov

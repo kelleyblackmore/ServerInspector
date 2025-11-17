@@ -1,5 +1,5 @@
 #!/bin/bash
-# Quick start script for ServerInspect Docker
+# Quick start script for serverinspector Docker
 
 set -e
 
@@ -9,9 +9,9 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 # Check if the image exists, build if needed
-if ! docker image inspect serverinspect:latest &>/dev/null; then
-    echo "ServerInspect image not found, building..."
-    docker build -t serverinspect:latest -f docker/Dockerfile .
+if ! docker image inspect serverinspector:latest &>/dev/null; then
+    echo "serverinspector image not found, building..."
+    docker build -t serverinspector:latest -f docker/Dockerfile .
 fi
 
 # Ensure config directory exists
@@ -56,17 +56,17 @@ fi
 
 # If no arguments provided, run the example
 if [ $# -eq 0 ]; then
-    echo "Running ServerInspect with example configuration"
+    echo "Running serverinspector with example configuration"
     docker run -v "$(pwd)"/config:/config \
                -v /etc:/host/etc:ro \
                -v /var/log:/host/var/log:ro \
                -v /proc:/host/proc:ro \
-               serverinspect run /config/example.yaml
+               serverinspector run /config/example.yaml
 else
-    # Otherwise pass arguments to serverinspect
+    # Otherwise pass arguments to serverinspector
     docker run -v "$(pwd)"/config:/config \
                -v /etc:/host/etc:ro \
                -v /var/log:/host/var/log:ro \
                -v /proc:/host/proc:ro \
-               serverinspect "$@"
+               serverinspector "$@"
 fi

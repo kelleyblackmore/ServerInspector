@@ -1,4 +1,4 @@
-# ServerInspect Makefile
+# serverinspector Makefile
 # Handles dependencies, testing, and building
 
 .PHONY: all install dev-install clean test build-exe build-windows build-linux build-macos run help docker-build install-linux test-linux clean-build
@@ -7,10 +7,10 @@
 all: help
 
 # Project settings
-PROJECT_NAME = serverinspect
+PROJECT_NAME = serverinspector
 DOCKER_IMAGE = $(PROJECT_NAME)-builder
 INSTALL_DIR = /usr/local/bin
-CONFIG_DIR = /etc/serverinspect
+CONFIG_DIR = /etc/serverinspector
 
 # Installation
 install:
@@ -79,35 +79,35 @@ run:
 # Install Linux executable
 install-linux:
 	@echo "Installing $(PROJECT_NAME) Linux executable..."
-	@if [ ! -f dist/serverinspect-linux-x86_64 ]; then \
+	@if [ ! -f dist/serverinspector-linux-x86_64 ]; then \
 		echo "Linux executable not found. Run 'make build-linux' first."; \
 		exit 1; \
 	fi
-	@echo "Installing to $(INSTALL_DIR)/serverinspect..."
-	sudo install -m 755 dist/serverinspect-linux-x86_64 $(INSTALL_DIR)/serverinspect
+	@echo "Installing to $(INSTALL_DIR)/serverinspector..."
+	sudo install -m 755 dist/serverinspector-linux-x86_64 $(INSTALL_DIR)/serverinspector
 	@echo "Creating config directory at $(CONFIG_DIR)..."
 	sudo mkdir -p $(CONFIG_DIR)
 	@if [ -d examples ]; then \
 		echo "Copying example configurations..."; \
 		sudo cp -r examples/* $(CONFIG_DIR)/; \
 	fi
-	@echo "Installation complete. You can now run 'serverinspect' from anywhere."
+	@echo "Installation complete. You can now run 'serverinspector' from anywhere."
 
 # Test the installed Linux executable
 test-linux:
 	@echo "Testing the installed Linux executable..."
-	@if ! command -v serverinspect >/dev/null 2>&1; then \
-		echo "serverinspect executable not found in PATH. Run 'make install-linux' first."; \
+	@if ! command -v serverinspector >/dev/null 2>&1; then \
+		echo "serverinspector executable not found in PATH. Run 'make install-linux' first."; \
 		exit 1; \
 	fi
 	@echo "Running basic tests..."
-	serverinspect --version
-	serverinspect --help
+	serverinspector --version
+	serverinspector --help
 	@echo "Testing example configuration..."
-	@if [ -f "serverinspect-test.yaml" ]; then \
-		serverinspect run --config serverinspect-test.yaml --dry-run; \
+	@if [ -f "serverinspector-test.yaml" ]; then \
+		serverinspector run --config serverinspector-test.yaml --dry-run; \
 	else \
-		echo "No test configuration found. Create a serverinspect-test.yaml file for complete testing."; \
+		echo "No test configuration found. Create a serverinspector-test.yaml file for complete testing."; \
 	fi
 	@echo "Test complete."
 
@@ -122,7 +122,7 @@ clean:
 # Uninstall
 uninstall-linux:
 	@echo "Uninstalling $(PROJECT_NAME) Linux executable..."
-	sudo rm -f $(INSTALL_DIR)/serverinspect
+	sudo rm -f $(INSTALL_DIR)/serverinspector
 	@echo "Would you like to remove the configuration directory at $(CONFIG_DIR)? [y/N] "
 	@read -r response; \
 	if [ "$$response" = "y" ] || [ "$$response" = "Y" ]; then \

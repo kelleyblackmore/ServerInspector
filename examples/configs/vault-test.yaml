@@ -4,7 +4,7 @@
 
 title: Vault Server Health Check
 description: Comprehensive tests for HashiCorp Vault server deployment
-author: ServerInspect User
+author: serverinspector User
 
 tests:
   # Installation and Service Tests
@@ -110,24 +110,24 @@ tests:
 
   - name: Write test secret
     type: command
-    command: vault kv put secret/serverinspect/test value=testing
+    command: vault kv put secret/serverinspector/test value=testing
     exit_status: 0
 
   - name: Read test secret
     type: command
-    command: vault kv get -format=json secret/serverinspect/test | jq -r '.data.data.value'
+    command: vault kv get -format=json secret/serverinspector/test | jq -r '.data.data.value'
     exit_status: 0
     stdout:
       contains: "testing"
 
   - name: List secrets in test path
     type: command
-    command: vault kv list -format=json secret/serverinspect
+    command: vault kv list -format=json secret/serverinspector
     exit_status: 0
 
   - name: Delete test secret
     type: command
-    command: vault kv delete secret/serverinspect/test
+    command: vault kv delete secret/serverinspector/test
     exit_status: 0
 
   # User Access Tests

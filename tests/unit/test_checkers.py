@@ -4,7 +4,7 @@ Unit tests for checker modules
 
 import pytest
 
-from serverinspect.checkers import get_checker
+from serverinspector.checkers import get_checker
 
 
 class TestGetChecker:

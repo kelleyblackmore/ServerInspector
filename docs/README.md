@@ -1,6 +1,6 @@
-# ServerInspect Documentation
+# serverinspector Documentation
 
-This directory contains detailed documentation for ServerInspect.
+This directory contains detailed documentation for serverinspector.
 
 ## Files
 

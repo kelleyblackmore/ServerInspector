@@ -189,9 +189,9 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease || false }}
           generate_release_notes: true
           files: |
-            release-artifacts/serverinspect-linux/*
-            release-artifacts/serverinspect-windows.exe/*
-            release-artifacts/serverinspect-macos/*
+            release-artifacts/serverinspector-linux/*
+            release-artifacts/serverinspector-windows.exe/*
+            release-artifacts/serverinspector-macos/*
             release-artifacts/sbom/*
             release-artifacts/python-package/*
 
@@ -203,7 +203,7 @@ jobs:
     if: github.event.inputs.prerelease != true
     environment:
       name: pypi
-      url: https://pypi.org/project/serverinspect/
+      url: https://pypi.org/project/serverinspector/
     
     steps:
       - name: Download package artifacts
@@ -226,7 +226,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: test-pypi
-      url: https://test.pypi.org/project/serverinspect/
+      url: https://test.pypi.org/project/serverinspector/
     
     steps:
       - name: Download package artifacts

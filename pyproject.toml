@@ -1,10 +1,10 @@
 [project]
-name = "serverinspect"
+name = "serverinspector"
 version = "0.1.0"
 description = "A Python-based server inspection and testing tool"
 readme = "README.md"
 authors = [
-    {name = "ServerInspect Team"}
+    {name = "serverinspector Team"}
 ]
 license = "MIT"
 requires-python = ">=3.10"
@@ -32,8 +32,8 @@ test = [
 ]
 
 [project.scripts]
-serverinspect = "serverinspect.cli:cli"
-si = "serverinspect.cli:cli"
+serverinspector = "serverinspector.cli:cli"
+si = "serverinspector.cli:cli"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
@@ -42,12 +42,12 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = [
-    "serverinspect",
-    "serverinspect.checkers",
-    "serverinspect.templates",
-    "serverinspect.runners",
-    "serverinspect.formatters",
-    "serverinspect.collectors"
+    "serverinspector",
+    "serverinspector.checkers",
+    "serverinspector.templates",
+    "serverinspector.runners",
+    "serverinspector.formatters",
+    "serverinspector.collectors"
 ]
 
 [tool.ruff]
@@ -56,7 +56,7 @@ line-length = 100
 
 [tool.ruff.lint]
 # Ignore E501 (line too long) for specific file patterns
-per-file-ignores = { "src/serverinspect/runners/*.py" = ["E501"], "tests/**/*.py" = ["E501"] }
+per-file-ignores = { "src/serverinspector/runners/*.py" = ["E501"], "tests/**/*.py" = ["E501"] }
 
 [tool.bandit]
 # Ignore specific warnings that have been properly mitigated

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>serverinspector Report</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .test-result {
+            margin-bottom: 1rem;
+        }
+        .test-details {
+            margin-top: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        pre {
+            background-color: var(--bs-dark);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            color: var(--bs-light);
+        }
+        .badge {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="mb-5">
+            <h1>serverinspector Report</h1>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">Report Information</div>
+                        <div class="card-body">
+                            <p><strong>Host:</strong> {{ results.host or 'localhost' }}</p>
+                            <p><strong>Timestamp:</strong> {{ results.timestamp }}</p>
+                            {% if results.title %}
+                            <p><strong>Title:</strong> {{ results.title }}</p>
+                            {% endif %}
+                            {% if results.description %}
+                            <p><strong>Description:</strong> {{ results.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Summary</div>
+                        <div class="card-body">
+                            {% if results.summary %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="progress flex-grow-1" style="height: 30px;">
+                                    {% if results.summary.total > 0 %}
+                                    <div
+                                        class="progress-bar bg-success"
+                                        role="progressbar"
+                                        style="width: {{ (results.summary.passed / results.summary.total) * 100 }}%;"
+                                        aria-valuenow="{{ results.summary.passed }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="{{ results.summary.total }}">
+                                        {{ results.summary.passed }} Passed
+                                    </div>
+                                    <div
+                                        class="progress-bar bg-danger"
+                                        role="progressbar"
+                                        style="width: {{ (results.summary.failed / results.summary.total) * 100 }}%;"
+                                        aria-valuenow="{{ results.summary.failed }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="{{ results.summary.total }}">
+                                        {{ results.summary.failed }} Failed
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p><strong>Total Tests:</strong> {{ results.summary.total }}</p>
+                            <p><strong>Passed:</strong> {{ results.summary.passed }}</p>
+                            <p><strong>Failed:</strong> {{ results.summary.failed }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        {% if results.system_info %}
+        <section class="mb-5">
+            <h2>System Information</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="accordion" id="systemInfoAccordion">
+                        {% for key, value in results.system_info.items() %}
+                        {% if key not in ['timestamp', 'error', 'cpu', 'memory', 'disk_usage', 'disk_detailed'] and not value is mapping %}
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">{{ key }}</div>
+                            <div class="col-md-9">{{ value }}</div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- CPU Information -->
+                        {% if results.system_info.cpu is defined %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="cpuHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cpuCollapse" aria-expanded="false" aria-controls="cpuCollapse">
+                                    CPU Information
+                                </button>
+                            </h2>
+                            <div id="cpuCollapse" class="accordion-collapse collapse" aria-labelledby="cpuHeading" data-bs-parent="#systemInfoAccordion">
+                                <div class="accordion-body">
+                                    {% for key, value in results.system_info.cpu.items() %}
+                                    {% if not value is mapping %}
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">{{ key }}</div>
+                                        <div class="col-md-8">{{ value }}</div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Memory Information -->
+                        {% if results.system_info.memory is defined %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="memoryHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#memoryCollapse" aria-expanded="false" aria-controls="memoryCollapse">
+                                    Memory Information
+                                </button>
+                            </h2>
+                            <div id="memoryCollapse" class="accordion-collapse collapse" aria-labelledby="memoryHeading" data-bs-parent="#systemInfoAccordion">
+                                <div class="accordion-body">
+                                    {% for key, value in results.system_info.memory.items() %}
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">{{ key }}</div>
+                                        <div class="col-md-8">{{ value }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Disk Usage -->
+                        {% if results.system_info.disk_usage is defined %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="diskHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diskCollapse" aria-expanded="false" aria-controls="diskCollapse">
+                                    Disk Usage
+                                </button>
+                            </h2>
+                            <div id="diskCollapse" class="accordion-collapse collapse" aria-labelledby="diskHeading" data-bs-parent="#systemInfoAccordion">
+                                <div class="accordion-body">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Filesystem</th>
+                                                <th>Size</th>
+                                                <th>Used</th>
+                                                <th>Available</th>
+                                                <th>Use %</th>
+                                                <th>Mounted On</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for disk in results.system_info.disk_usage %}
+                                            <tr>
+                                                <td>{{ disk.filesystem }}</td>
+                                                <td>{{ disk.size }}</td>
+                                                <td>{{ disk.used }}</td>
+                                                <td>{{ disk.available }}</td>
+                                                <td>{{ disk.use_percent }}</td>
+                                                <td>{{ disk.mounted_on }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if results.tests %}
+        <section>
+            <h2>Test Results</h2>
+            <div class="mb-3">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="testFilter" id="filterAll" value="all" checked>
+                    <label class="form-check-label" for="filterAll">All Tests</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="testFilter" id="filterPassed" value="passed">
+                    <label class="form-check-label" for="filterPassed">Passed Tests</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="testFilter" id="filterFailed" value="failed">
+                    <label class="form-check-label" for="filterFailed">Failed Tests</label>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for test in results.tests %}
+                <div class="col-12 mb-3 test-result {% if test.result %}test-passed{% else %}test-failed{% endif %}">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">{{ test.name }}</span>
+                                <span class="badge {% if test.result %}bg-success{% else %}bg-danger{% endif %} ms-2">
+                                    {% if test.result %}Passed{% else %}Failed{% endif %}
+                                </span>
+                                <span class="badge bg-secondary ms-2">{{ test.type }}</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#test-{{ loop.index }}">
+                                Details
+                            </button>
+                        </div>
+                        <div class="collapse" id="test-{{ loop.index }}">
+                            <div class="card-body">
+                                <div class="test-details">
+                                    {% if test.error %}
+                                    <div class="alert alert-danger">
+                                        {{ test.error }}
+                                    </div>
+                                    {% endif %}
+
+                                    <h5>Test Details</h5>
+                                    <pre>{{ test.details | tojson(indent=2) }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <footer class="mt-5 pt-3 border-top text-center text-muted">
+            <p>Generated by serverinspector on {{ results.timestamp }}</p>
+        </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Filter tests by result
+        document.querySelectorAll('input[name="testFilter"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const filter = this.value;
+                document.querySelectorAll('.test-result').forEach(test => {
+                    if (filter === 'all') {
+                        test.style.display = 'block';
+                    } else if (filter === 'passed' && test.classList.contains('test-passed')) {
+                        test.style.display = 'block';
+                    } else if (filter === 'failed' && test.classList.contains('test-failed')) {
+                        test.style.display = 'block';
+                    } else {
+                        test.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

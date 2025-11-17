@@ -4,7 +4,7 @@
   "distributions": {
     "alpine": {
       "distribution": "Alpine 3.19",
-      "container": "serverinspect-alpine",
+      "container": "serverinspector-alpine",
       "package_manager": "apk",
       "service_manager": "OpenRC",
       "total_tests": 2,

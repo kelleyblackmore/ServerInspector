@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# ServerInspect Universal Installer
-# This script detects your operating system and installs ServerInspect
+# serverinspector Universal Installer
+# This script detects your operating system and installs serverinspector
 # in the most appropriate way.
 #
 # Usage:
-#   curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/install.sh | bash
+#   curl -sSL https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/install.sh | bash
 #   # or
-#   wget -qO- https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/install.sh | bash
+#   wget -qO- https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/install.sh | bash
 
 set -e
 BOLD="\033[1m"
@@ -17,7 +17,7 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 BLUE="\033[0;34m"
 
-echo -e "${BOLD}ServerInspect Installer${RESET}"
+echo -e "${BOLD}serverinspector Installer${RESET}"
 echo "Detecting system configuration..."
 
 # Check for Docker
@@ -180,57 +180,57 @@ case $CHOICE in
 esac
 
 echo ""
-echo -e "${BOLD}Installing ServerInspect via $METHOD...${RESET}"
+echo -e "${BOLD}Installing serverinspector via $METHOD...${RESET}"
 
 case $METHOD in
     docker)
         echo "Creating installation directory..."
-        INSTALL_DIR="$HOME/serverinspect"
+        INSTALL_DIR="$HOME/serverinspector"
         mkdir -p "$INSTALL_DIR"
         cd "$INSTALL_DIR"
 
         echo "Downloading Dockerfile and supporting files..."
-        curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/Dockerfile -o Dockerfile
-        curl -sSL https://raw.githubusercontent.com/kelleyblackmore/ServerInspector/main/scripts/docker-run.sh -o docker-run.sh
+        curl -sSL https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/Dockerfile -o Dockerfile
+        curl -sSL https://raw.githubusercontent.com/kelleyblackmore/serverinspector/main/scripts/docker-run.sh -o docker-run.sh
         chmod +x docker-run.sh
         mkdir -p config
 
         echo "Building Docker image..."
-        docker build -t serverinspect .
+        docker build -t serverinspector .
 
         echo "Creating wrapper script..."
-        cat > serverinspect << 'EOL'
+        cat > serverinspector << 'EOL'
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 docker run -v "$SCRIPT_DIR/config:/config" \
            -v /etc:/host/etc:ro \
            -v /var/log:/host/var/log:ro \
            -v /proc:/host/proc:ro \
-           serverinspect "$@"
+           serverinspector "$@"
 EOL
-        chmod +x serverinspect
+        chmod +x serverinspector
 
         # Add to PATH if possible
         if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
             echo "Adding to PATH..."
-            ln -sf "$INSTALL_DIR/serverinspect" "$HOME/.local/bin/serverinspect"
+            ln -sf "$INSTALL_DIR/serverinspector" "$HOME/.local/bin/serverinspector"
         fi
 
         echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
         echo ""
-        echo "You can now use ServerInspect with:"
-        echo -e "  ${BLUE}$INSTALL_DIR/serverinspect run /config/example.yaml${RESET}"
+        echo "You can now use serverinspector with:"
+        echo -e "  ${BLUE}$INSTALL_DIR/serverinspector run /config/example.yaml${RESET}"
 
         if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
-            echo -e "  or simply: ${BLUE}serverinspect run /config/example.yaml${RESET}"
+            echo -e "  or simply: ${BLUE}serverinspector run /config/example.yaml${RESET}"
         fi
         ;;
 
     pipx)
-        echo "Installing ServerInspect via pipx..."
+        echo "Installing serverinspector via pipx..."
         if [ "$HAS_PIPX" = true ]; then
             # Check if we're already in the repository
-            if [ -f "pyproject.toml" ] && [ -d "src/serverinspect" ]; then
+            if [ -f "pyproject.toml" ] && [ -d "src/serverinspector" ]; then
                 echo "Detected existing repository."
 
                 echo "Fixing package configuration..."
@@ -238,7 +238,7 @@ EOL
                 sed -i '/test_types/d' pyproject.toml
 
                 # Make sure the directory exists to avoid the error
-                mkdir -p src/serverinspect/test_types
+                mkdir -p src/serverinspector/test_types
 
                 echo "Installing with pipx..."
                 pipx install .
@@ -249,19 +249,19 @@ EOL
 
                 echo "Cloning repository to modify configuration..."
                 if command -v git >/dev/null 2>&1; then
-                    git clone https://github.com/kelleyblackmore/ServerInspector.git .
+                    git clone https://github.com/kelleyblackmore/serverinspector.git .
                 else
                     if command -v curl >/dev/null 2>&1; then
-                        curl -sSL https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -o serverinspect.tar.gz
+                        curl -sSL https://github.com/kelleyblackmore/serverinspector/archive/main.tar.gz -o serverinspector.tar.gz
                     elif command -v wget >/dev/null 2>&1; then
-                        wget -q https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -O serverinspect.tar.gz
+                        wget -q https://github.com/kelleyblackmore/serverinspector/archive/main.tar.gz -O serverinspector.tar.gz
                     else
                         echo -e "${RED}Error: Neither git, curl, nor wget found. Cannot download source.${RESET}"
                         exit 1
                     fi
 
-                    tar xzf serverinspect.tar.gz --strip-components=1
-                    rm serverinspect.tar.gz
+                    tar xzf serverinspector.tar.gz --strip-components=1
+                    rm serverinspector.tar.gz
                 fi
 
                 echo "Fixing package configuration..."
@@ -269,7 +269,7 @@ EOL
                 sed -i '/test_types/d' pyproject.toml
 
                 # Make sure the directory exists to avoid the error
-                mkdir -p src/serverinspect/test_types
+                mkdir -p src/serverinspector/test_types
 
                 echo "Installing with pipx..."
                 pipx install .
@@ -281,8 +281,8 @@ EOL
 
             echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
             echo ""
-            echo "You can now use ServerInspect with:"
-            echo -e "  ${BLUE}serverinspect --help${RESET}"
+            echo "You can now use serverinspector with:"
+            echo -e "  ${BLUE}serverinspector --help${RESET}"
         else
             echo -e "${RED}Error: pipx not found. Installing pipx first...${RESET}"
             if [ "$HAS_PIP" = true ]; then
@@ -298,10 +298,10 @@ EOL
         ;;
 
     pip)
-        echo "Installing ServerInspect via pip..."
+        echo "Installing serverinspector via pip..."
         if [ "$HAS_PIP" = true ]; then
             # Check if we're already in the repository
-            if [ -f "pyproject.toml" ] && [ -d "src/serverinspect" ]; then
+            if [ -f "pyproject.toml" ] && [ -d "src/serverinspector" ]; then
                 echo "Detected existing repository."
 
                 echo "Fixing package configuration..."
@@ -309,7 +309,7 @@ EOL
                 sed -i '/test_types/d' pyproject.toml
 
                 # Make sure the directory exists to avoid the error
-                mkdir -p src/serverinspect/test_types
+                mkdir -p src/serverinspector/test_types
 
                 echo "Installing with pip..."
                 pip install --user .
@@ -320,19 +320,19 @@ EOL
 
                 echo "Cloning repository to modify configuration..."
                 if command -v git >/dev/null 2>&1; then
-                    git clone https://github.com/kelleyblackmore/ServerInspector.git .
+                    git clone https://github.com/kelleyblackmore/serverinspector.git .
                 else
                     if command -v curl >/dev/null 2>&1; then
-                        curl -sSL https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -o serverinspect.tar.gz
+                        curl -sSL https://github.com/kelleyblackmore/serverinspector/archive/main.tar.gz -o serverinspector.tar.gz
                     elif command -v wget >/dev/null 2>&1; then
-                        wget -q https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -O serverinspect.tar.gz
+                        wget -q https://github.com/kelleyblackmore/serverinspector/archive/main.tar.gz -O serverinspector.tar.gz
                     else
                         echo -e "${RED}Error: Neither git, curl, nor wget found. Cannot download source.${RESET}"
                         exit 1
                     fi
 
-                    tar xzf serverinspect.tar.gz --strip-components=1
-                    rm serverinspect.tar.gz
+                    tar xzf serverinspector.tar.gz --strip-components=1
+                    rm serverinspector.tar.gz
                 fi
 
                 echo "Fixing package configuration..."
@@ -340,7 +340,7 @@ EOL
                 sed -i '/test_types/d' pyproject.toml
 
                 # Make sure the directory exists to avoid the error
-                mkdir -p src/serverinspect/test_types
+                mkdir -p src/serverinspector/test_types
 
                 echo "Installing with pip..."
                 pip install --user .
@@ -352,8 +352,8 @@ EOL
 
             echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
             echo ""
-            echo "You can now use ServerInspect with:"
-            echo -e "  ${BLUE}serverinspect --help${RESET}"
+            echo "You can now use serverinspector with:"
+            echo -e "  ${BLUE}serverinspector --help${RESET}"
         else
             echo -e "${RED}Error: pip not found. Cannot install via pip.${RESET}"
             exit 1
@@ -362,25 +362,25 @@ EOL
 
     source)
         echo "Installing from source..."
-        INSTALL_DIR="$HOME/serverinspect"
+        INSTALL_DIR="$HOME/serverinspector"
         mkdir -p "$INSTALL_DIR"
         cd "$INSTALL_DIR"
 
         echo "Downloading source code..."
         if command -v git >/dev/null 2>&1; then
-            git clone https://github.com/kelleyblackmore/ServerInspector.git .
+            git clone https://github.com/kelleyblackmore/serverinspector.git .
         else
             if command -v curl >/dev/null 2>&1; then
-                curl -sSL https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -o serverinspect.tar.gz
+                curl -sSL https://github.com/kelleyblackmore/serverinspector/archive/main.tar.gz -o serverinspector.tar.gz
             elif command -v wget >/dev/null 2>&1; then
-                wget -q https://github.com/kelleyblackmore/ServerInspector/archive/main.tar.gz -O serverinspect.tar.gz
+                wget -q https://github.com/kelleyblackmore/serverinspector/archive/main.tar.gz -O serverinspector.tar.gz
             else
                 echo -e "${RED}Error: Neither git, curl, nor wget found. Cannot download source.${RESET}"
                 exit 1
             fi
 
-            tar xzf serverinspect.tar.gz --strip-components=1
-            rm serverinspect.tar.gz
+            tar xzf serverinspector.tar.gz --strip-components=1
+            rm serverinspector.tar.gz
         fi
 
         # Create virtualenv if available
@@ -391,26 +391,26 @@ EOL
                 . venv/bin/activate
                 pip install .
 
-                cat > serverinspect << 'EOL'
+                cat > serverinspector << 'EOL'
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/venv/bin/python" -m serverinspect.cli "$@"
+"$SCRIPT_DIR/venv/bin/python" -m serverinspector.cli "$@"
 EOL
-                chmod +x serverinspect
+                chmod +x serverinspector
 
                 # Add to PATH if possible
                 if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
                     echo "Adding to PATH..."
-                    ln -sf "$INSTALL_DIR/serverinspect" "$HOME/.local/bin/serverinspect"
+                    ln -sf "$INSTALL_DIR/serverinspector" "$HOME/.local/bin/serverinspector"
                 fi
 
                 echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
                 echo ""
-                echo "You can now use ServerInspect with:"
-                echo -e "  ${BLUE}$INSTALL_DIR/serverinspect --help${RESET}"
+                echo "You can now use serverinspector with:"
+                echo -e "  ${BLUE}$INSTALL_DIR/serverinspector --help${RESET}"
 
                 if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
-                    echo -e "  or simply: ${BLUE}serverinspect --help${RESET}"
+                    echo -e "  or simply: ${BLUE}serverinspector --help${RESET}"
                 fi
             else
                 echo "Installing dependencies..."
@@ -418,10 +418,10 @@ EOL
 
                 echo -e "${GREEN}${BOLD}Installation successful!${RESET}"
                 echo ""
-                echo "You can now use ServerInspect by navigating to:"
+                echo "You can now use serverinspector by navigating to:"
                 echo -e "  ${BLUE}cd $INSTALL_DIR${RESET}"
                 echo "And running:"
-                echo -e "  ${BLUE}python -m serverinspect.cli --help${RESET}"
+                echo -e "  ${BLUE}python -m serverinspector.cli --help${RESET}"
             fi
         else
             echo -e "${YELLOW}Warning: Python not found. Manual setup required.${RESET}"

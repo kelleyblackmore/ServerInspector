@@ -1,4 +1,4 @@
-# ServerInspect
+# serverinspector
 
 A Python-based server inspection and testing tool, similar to InSpec, Goss, and ServerSpec. This tool allows you to define, run, and report on server tests and audits.
 
@@ -24,15 +24,15 @@ A Python-based server inspection and testing tool, similar to InSpec, Goss, and 
 
 ```bash
 # Install from PyPI
-pip install serverinspect
+pip install serverinspector
 ```
 
 ### Development Installation
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/ServerInspector.git
-   cd ServerInspector
+   git clone https://github.com/yourusername/serverinspector.git
+   cd serverinspector
    ```
 
 2. Create a virtual environment
@@ -79,7 +79,7 @@ To build a standalone executable that can be distributed without Python:
 ### Command Aliases
 
 The tool can be run using either:
-- `serverinspect` - Full name
+- `serverinspector` - Full name
 - `si` - Short alias
 
 Both commands provide the same functionality.
@@ -88,33 +88,33 @@ Both commands provide the same functionality.
 
 ```bash
 # Show help
-serverinspect --help
+serverinspector --help
 # or
 si --help
 
 # Run tests from a configuration file
-serverinspect run examples/basic_test.yaml
+serverinspector run examples/basic_test.yaml
 # or
 si run examples/basic_test.yaml
 
 # Run tests on a remote server via SSH
-serverinspect run examples/ssh_test.yaml --host example.com --username user --key-file ~/.ssh/id_rsa
+serverinspector run examples/ssh_test.yaml --host example.com --username user --key-file ~/.ssh/id_rsa
 # or
 si run examples/ssh_test.yaml --host example.com --username user --key-file ~/.ssh/id_rsa
 
 # Collect and display system information
-serverinspect system-info --output-format terminal
+serverinspector system-info --output-format terminal
 # or
 si system-info --output-format terminal
 
 # Perform a quick check
-serverinspect check file /etc/hosts --exists
+serverinspector check file /etc/hosts --exists
 # or
 si check file /etc/hosts --exists
 
 # Export results to different formats
-serverinspect run examples/basic_test.yaml --output-format json --output-file results.json
-serverinspect run examples/basic_test.yaml --output-format html --output-file report.html
+serverinspector run examples/basic_test.yaml --output-format json --output-file results.json
+serverinspector run examples/basic_test.yaml --output-format html --output-file report.html
 ```
 
 ### Example Test Configuration
@@ -146,7 +146,7 @@ tests:
 
 ## Architecture
 
-ServerInspect has a modular architecture:
+serverinspector has a modular architecture:
 
 - **Runners**: Execute tests on local or remote systems
 - **Test Types**: Different types of tests (file, service, command, etc.)

@@ -1,15 +1,15 @@
-# ServerInspect Docker Usage
+# serverinspector Docker Usage
 
-This document explains how to use ServerInspect with Docker for simplified deployment.
+This document explains how to use serverinspector with Docker for simplified deployment.
 
 ## About This Container
 
-This Docker container is designed to run ServerInspect without
+This Docker container is designed to run serverinspector without
 installing it on your system. The container:
 
 1. Automatically removes any references to the deprecated `test_types` module
 2. Uses the new `checkers` module instead
-3. Sets up the Python environment correctly to run ServerInspect
+3. Sets up the Python environment correctly to run serverinspector
 
 ## Quick Start
 
@@ -25,16 +25,16 @@ installing it on your system. The container:
 
 ```bash
 # Build the image
-docker build -t serverinspect .
+docker build -t serverinspector .
 
 # Run the simple test
-docker run serverinspect run /config/simple-test.yaml
+docker run serverinspector run /config/simple-test.yaml
 
 # Get system information
-docker run serverinspect system-info
+docker run serverinspector system-info
 
 # Run in interactive mode
-docker run -it serverinspect shell
+docker run -it serverinspector shell
 ```
 
 ### Using Docker Compose
@@ -42,11 +42,11 @@ docker run -it serverinspect shell
 ```bash
 # Build and run with docker-compose
 docker-compose build
-docker-compose run serverinspect run /config/simple-test.yaml
+docker-compose run serverinspector run /config/simple-test.yaml
 
 # Run with a custom configuration file
 docker-compose run -v $(pwd)/my-checks.yaml:/config/my-checks.yaml \
-serverinspect run /config/my-checks.yaml
+serverinspector run /config/my-checks.yaml
 ```
 
 ## Accessing Host System
@@ -78,7 +78,7 @@ Example:
 
 ```bash
 # Use with absolute paths to avoid Docker volume mounting issues
-docker run -v $(pwd)/config:/config serverinspect run /config/docker-example.yaml
+docker run -v $(pwd)/config:/config serverinspector run /config/docker-example.yaml
 ```
 
 ## Available Commands
@@ -87,16 +87,16 @@ The container supports the following commands:
 
 ```bash
 # Run checks from a configuration file
-docker run serverinspect run /config/my-config.yaml
+docker run serverinspector run /config/my-config.yaml
 
 # Get system information
-docker run serverinspect system-info
+docker run serverinspector system-info
 
 # Initialize a new configuration file (outputs to current directory)
-docker run -v $(pwd):/output serverinspect init
+docker run -v $(pwd):/output serverinspector init
 
 # Start an interactive shell
-docker run -it serverinspect shell
+docker run -it serverinspector shell
 ```
 
 ## Pre-built Example
@@ -106,7 +106,7 @@ A Docker example configuration file is included in the container at
 
 ```bash
 # Run the included sample test
-docker run serverinspect run /config/simple-test.yaml
+docker run serverinspector run /config/simple-test.yaml
 ```
 
 ## Extending the Container
@@ -114,7 +114,7 @@ docker run serverinspect run /config/simple-test.yaml
 To create a custom container with your own configuration files:
 
 ```dockerfile
-FROM serverinspect:latest
+FROM serverinspector:latest
 
 # Add your configuration files
 COPY my-config.yaml /config/
@@ -130,10 +130,10 @@ CMD ["run", "/config/my-config.yaml"]
 
   ```bash
   # WRONG: May not work in all environments
-  docker run -v ./config:/config serverinspect ...
+  docker run -v ./config:/config serverinspector ...
 
   # RIGHT: Use absolute paths
-  docker run -v $(pwd)/config:/config serverinspect ...
+  docker run -v $(pwd)/config:/config serverinspector ...
   ```
 
 - **Permission issues**: If you encounter permission problems, you may need to:
@@ -146,6 +146,6 @@ CMD ["run", "/config/my-config.yaml"]
 - **Adding tools**: If you need additional system tools:
 
   ```bash
-  docker run -it serverinspect shell
+  docker run -it serverinspector shell
   apt-get update && apt-get install -y <package-name>
   ```

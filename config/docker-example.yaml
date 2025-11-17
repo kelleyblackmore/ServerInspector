@@ -1,5 +1,5 @@
 ---
-# ServerInspect Docker Example Configuration
+# serverinspector Docker Example Configuration
 # This example demonstrates checks that work well in the Docker environment
 
 name: Docker Environment Validation
