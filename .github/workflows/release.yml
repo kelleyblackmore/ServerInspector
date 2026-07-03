@@ -115,7 +115,7 @@ jobs:
           pip-licenses --format=markdown --output-file=licenses.md
 
       - name: Upload SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: |
@@ -147,7 +147,7 @@ jobs:
         run: twine check dist/*
 
       - name: Upload package artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-package
           path: dist/*
