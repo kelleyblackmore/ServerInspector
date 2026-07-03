@@ -13,12 +13,6 @@ from rich.logging import RichHandler
 from serverinspector.config import load_config
 from serverinspector.core import serverinspector
 
-# Import modules that might not be available (they'll be handled properly inside the functions)
-try:
-    pass
-except ImportError:
-    pass  # This will be handled in the check function
-
 # Set up rich console for better output
 console = Console()
 
@@ -178,10 +172,9 @@ tests:
     enabled: true
 
   - name: Check if web directory exists
-    type: file
+    type: directory
     path: /var/www/html
     exists: true
-    type: directory
 
   - name: Check nginx configuration syntax
     type: command
@@ -211,10 +204,6 @@ tests:
 
             console.print(traceback.format_exc())
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    cli()
 
 
 @cli.command()
@@ -310,17 +299,21 @@ def check(check_type, target, **options):
             checker = get_checker(check_type)
             result = checker.check(params)
 
-            # Display the result
+            # Display the result (rich degrades gracefully on consoles that
+            # cannot render unicode, unlike click.secho)
             if result["success"]:
-                click.secho(f"✓ {result['message']}", fg="green")
+                console.print(f"[green]PASS[/green] {result['message']}")
             else:
-                click.secho(f"✗ {result['message']}", fg="red")
+                console.print(f"[red]FAIL[/red] {result['message']}")
 
             # Show details if any
             if result["details"]:
                 click.echo("Details:")
                 for key, value in result["details"].items():
                     click.echo(f"  {key}: {value}")
+
+            if not result["success"]:
+                sys.exit(1)
         except ValueError as e:
             # Invalid checker type or other validation error
             console.print(f"[bold red]Error:[/bold red] {str(e)}")
@@ -343,3 +336,7 @@ def check(check_type, target, **options):
 
             console.print(traceback.format_exc())
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    cli()

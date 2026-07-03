@@ -23,54 +23,61 @@ def collect_system_info(runner):
 
     info = {}
 
-    # Basic information that should work on any system
-    try:
-        # Get hostname
-        info["hostname"] = runner.run_command("hostname").strip()
+    is_local = runner.__class__.__name__ == "LocalRunner"
 
-        # Get kernel and OS info
-        uname_result = runner.run_command("uname -a").strip()
-        info["uname"] = uname_result
+    # Guard each step individually so one missing command (common when
+    # running locally on Windows or a minimal system) doesn't abort the rest.
+    def try_collect(key, func):
+        try:
+            value = func()
+        except Exception as e:
+            logger.warning(f"Could not collect {key}: {str(e)}")
+            return
+        if value is not None:
+            info[key] = value
 
-        # Try to get OS release information
-        if runner.file_exists("/etc/os-release"):
-            os_release = runner.run_command("cat /etc/os-release")
-            info["os_release"] = parse_os_release(os_release)
+    def count_processes():
+        if is_local:
+            import psutil
 
-        # CPU information
-        if runner.file_exists("/proc/cpuinfo"):
-            cpu_info = runner.run_command("cat /proc/cpuinfo")
-            info["cpu"] = parse_cpuinfo(cpu_info)
+            return len(psutil.pids())
+        # Subtract header line
+        return int(runner.run_command("ps aux | wc -l").strip()) - 1
 
-        # Memory information
-        if runner.file_exists("/proc/meminfo"):
-            mem_info = runner.run_command("cat /proc/meminfo")
-            info["memory"] = parse_meminfo(mem_info)
+    try_collect("hostname", lambda: runner.run_command("hostname").strip())
+    try_collect("uname", lambda: runner.run_command("uname -a").strip())
+    try_collect(
+        "os_release",
+        lambda: (
+            parse_os_release(runner.run_command("cat /etc/os-release"))
+            if runner.file_exists("/etc/os-release")
+            else None
+        ),
+    )
+    try_collect(
+        "cpu",
+        lambda: (
+            parse_cpuinfo(runner.run_command("cat /proc/cpuinfo"))
+            if runner.file_exists("/proc/cpuinfo")
+            else None
+        ),
+    )
+    try_collect(
+        "memory",
+        lambda: (
+            parse_meminfo(runner.run_command("cat /proc/meminfo"))
+            if runner.file_exists("/proc/meminfo")
+            else None
+        ),
+    )
+    try_collect("disk_usage", lambda: parse_df_output(runner.run_command("df -h")))
+    try_collect("network", lambda: collect_network_info(runner))
+    try_collect("process_count", count_processes)
+    try_collect("uptime", lambda: runner.run_command("uptime").strip())
 
-        # Disk usage
-        df_output = runner.run_command("df -h")
-        info["disk_usage"] = parse_df_output(df_output)
-
-        # Network information
-        network_info = collect_network_info(runner)
-        info["network"] = network_info
-
-        # Running processes count
-        ps_count = runner.run_command("ps aux | wc -l")
-        info["process_count"] = int(ps_count.strip()) - 1  # Subtract header line
-
-        # Uptime
-        uptime_output = runner.run_command("uptime")
-        info["uptime"] = uptime_output.strip()
-
-        # Collect additional information on the local system
-        if runner.__class__.__name__ == "LocalRunner":
-            local_info = collect_local_system_info()
-            info.update(local_info)
-
-    except Exception as e:
-        logger.error(f"Error collecting system information: {str(e)}")
-        info["error"] = str(e)
+    # Collect additional information on the local system
+    if is_local:
+        info.update(collect_local_system_info())
 
     # Add timestamp
     info["timestamp"] = datetime.now().isoformat()

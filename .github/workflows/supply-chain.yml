@@ -22,7 +22,7 @@ jobs:
       id-token: write
       contents: read
       actions: read
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
   license-compliance:
     name: License Compliance Check
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
         run: |
           pip-licenses --format=json > licenses-full.json
           cat licenses-full.json
-          
+
           # Fail if GPL or AGPL licenses are found (incompatible with MIT)
           if pip-licenses | grep -iE "GPL|AGPL|SSPL"; then
             echo "::error::Found incompatible licenses (GPL/AGPL)"
@@ -85,7 +85,7 @@ jobs:
       id-token: write
       contents: read
       actions: read
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

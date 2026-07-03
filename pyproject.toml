@@ -44,11 +44,13 @@ package-dir = {"" = "src"}
 packages = [
     "serverinspector",
     "serverinspector.checkers",
-    "serverinspector.templates",
     "serverinspector.runners",
     "serverinspector.formatters",
     "serverinspector.collectors"
 ]
+
+[tool.setuptools.package-data]
+serverinspector = ["templates/*.j2"]
 
 [tool.ruff]
 # Set a specific line length
@@ -62,6 +64,6 @@ per-file-ignores = { "src/serverinspector/runners/*.py" = ["E501"], "tests/**/*.
 # Ignore specific warnings that have been properly mitigated
 # B404: Import of subprocess module - We use subprocess with proper safeguards
 # B603: subprocess call with shell=False - This is actually safer than shell=True
-# B601: Paramiko exec_command possible shell injection - We sanitize inputs with shlex.quote()
+# B601: Paramiko exec_command possible shell injection - Commands come from the operator's own test config and are executed verbatim by design
 # B507: Paramiko set_missing_host_key_policy with AutoAddPolicy - Expected for a server inspection tool
 skips = ["B404", "B603", "B601", "B507"]

@@ -145,3 +145,42 @@ class TestVariableProcessing:
         result = process_variables(config, variables)
 
         assert "8080" in str(result["port"])
+
+    def test_numeric_variable_keeps_type(self):
+        """A value that is exactly a variable reference keeps its type."""
+        config = {"port": "{{ port_num }}"}
+        variables = {"port_num": 8080}
+
+        result = process_variables(config, variables)
+
+        assert result["port"] == 8080
+
+    def test_windows_path_substitution(self):
+        """Backslashes in values must not be treated as regex escapes."""
+        config = {
+            "tests": [
+                {
+                    "name": "hosts file",
+                    "type": "file",
+                    "path": "{{ HOSTS_FILE }}",
+                }
+            ]
+        }
+        variables = {"HOSTS_FILE": "C:\\Windows\\System32\\drivers\\etc\\hosts"}
+
+        result = process_variables(config, variables)
+
+        assert (
+            result["tests"][0]["path"] == "C:\\Windows\\System32\\drivers\\etc\\hosts"
+        )
+
+    def test_substitution_inside_lists_and_nested_dicts(self):
+        """Variables are substituted recursively through the structure."""
+        config = {
+            "environment": {"paths": ["{{ base }}/logs", "{{ base }}/data"]},
+        }
+        variables = {"base": "/srv/app"}
+
+        result = process_variables(config, variables)
+
+        assert result["environment"]["paths"] == ["/srv/app/logs", "/srv/app/data"]

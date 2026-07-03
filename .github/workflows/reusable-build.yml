@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ inputs.os }}
     outputs:
       artifact: ${{ steps.set-name.outputs.name }}
-    
+
     steps:
       - uses: actions/checkout@v4
 
