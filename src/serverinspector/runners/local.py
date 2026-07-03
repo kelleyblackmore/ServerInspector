@@ -12,6 +12,19 @@ from serverinspector.runners.base import BaseRunner
 logger = logging.getLogger("serverinspector")
 
 
+def _prepare_command(command):
+    """
+    Prepare a command string for subprocess.run with shell=False.
+
+    On POSIX, split into an argument list. On Windows, pass the string
+    through: shlex.split would mangle backslashes in paths, and
+    CreateProcess parses the command line natively.
+    """
+    if os.name == "nt":
+        return command
+    return shlex.split(command)
+
+
 class LocalRunner(BaseRunner):
     """
     Runner that executes tests on the local system.
@@ -35,8 +48,7 @@ class LocalRunner(BaseRunner):
             subprocess.CalledProcessError: If the command fails
         """
         logger.debug(f"Running command: {command}")
-        # Split the command into arguments for security
-        command_args = shlex.split(command)
+        command_args = _prepare_command(command)
         result = subprocess.run(
             command_args,
             shell=False,
@@ -63,8 +75,7 @@ class LocalRunner(BaseRunner):
             tuple: (exit_code, stdout, stderr)
         """
         logger.debug(f"Running command with status: {command}")
-        # Split the command into arguments for security
-        command_args = shlex.split(command)
+        command_args = _prepare_command(command)
         result = subprocess.run(
             command_args,
             shell=False,
