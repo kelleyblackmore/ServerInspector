@@ -119,11 +119,10 @@ class SSHRunner(BaseRunner):
         if not isinstance(command, str):
             raise TypeError("Command must be a string")
 
-        # Sanitize the command to prevent shell injection
-        # This is a security measure to prevent command injection attacks
-        command = shlex.quote(command)
-
-        _stdin, stdout, stderr = self.client.exec_command(command)
+        # Commands come from the operator's own test configuration and are
+        # executed verbatim; quoting the whole string would turn multi-word
+        # commands into a single literal program name and break them.
+        _stdin, stdout, stderr = self.client.exec_command(command)  # nosec B601
         exit_status = stdout.channel.recv_exit_status()
 
         if exit_status != 0:
@@ -152,10 +151,8 @@ class SSHRunner(BaseRunner):
         if not isinstance(command, str):
             raise TypeError("Command must be a string")
 
-        # Sanitize the command to prevent shell injection
-        command = shlex.quote(command)
-
-        _stdin, stdout, stderr = self.client.exec_command(command)
+        # See run_command: commands are executed verbatim by design.
+        _stdin, stdout, stderr = self.client.exec_command(command)  # nosec B601
         exit_status = stdout.channel.recv_exit_status()
 
         return (
@@ -174,7 +171,7 @@ class SSHRunner(BaseRunner):
         Returns:
             bool: True if the file exists
         """
-        exit_code, _, _ = self.run_command_with_status(f"test -e {path}")
+        exit_code, _, _ = self.run_command_with_status(f"test -e {shlex.quote(path)}")
         return exit_code == 0
 
     def __del__(self):

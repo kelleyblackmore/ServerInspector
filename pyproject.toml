@@ -10,24 +10,24 @@ license = "MIT"
 requires-python = ">=3.10"
 dependencies = [
     "click>=8.1.0",
-    "jinja2>=3.1.0",
+    "jinja2>=3.1.6",
     "paramiko>=4.0.0",
     "psutil>=5.9.0",
     "pyyaml>=6.0.3",
-    "rich>=12.0.0",
+    "rich>=15.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "black>=23.0.0",
-    "isort>=5.12.0",
+    "isort>=8.0.1",
     "flake8>=7.3.0",
     "pylint>=2.17.0",
     "pyinstaller>=6.19.0",
-    "ruff>=0.1.3",
+    "ruff>=0.15.10",
 ]
 test = [
-    "pytest>=7.0.0",
+    "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
 ]
 
@@ -44,11 +44,13 @@ package-dir = {"" = "src"}
 packages = [
     "serverinspector",
     "serverinspector.checkers",
-    "serverinspector.templates",
     "serverinspector.runners",
     "serverinspector.formatters",
     "serverinspector.collectors"
 ]
+
+[tool.setuptools.package-data]
+serverinspector = ["templates/*.j2"]
 
 [tool.ruff]
 # Set a specific line length
@@ -62,6 +64,6 @@ per-file-ignores = { "src/serverinspector/runners/*.py" = ["E501"], "tests/**/*.
 # Ignore specific warnings that have been properly mitigated
 # B404: Import of subprocess module - We use subprocess with proper safeguards
 # B603: subprocess call with shell=False - This is actually safer than shell=True
-# B601: Paramiko exec_command possible shell injection - We sanitize inputs with shlex.quote()
+# B601: Paramiko exec_command possible shell injection - Commands come from the operator's own test config and are executed verbatim by design
 # B507: Paramiko set_missing_host_key_policy with AutoAddPolicy - Expected for a server inspection tool
 skips = ["B404", "B603", "B601", "B507"]

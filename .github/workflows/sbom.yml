@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -35,8 +35,8 @@ jobs:
       # Generate SBOM in CycloneDX format (industry standard)
       - name: Generate CycloneDX SBOM
         run: |
-          cyclonedx-py -o sbom-cyclonedx.json --format json
-          cyclonedx-py -o sbom-cyclonedx.xml --format xml
+          cyclonedx-py environment --output-format json -o sbom-cyclonedx.json
+          cyclonedx-py environment --output-format xml -o sbom-cyclonedx.xml
 
       # Generate simple license report
       - name: Generate License Report

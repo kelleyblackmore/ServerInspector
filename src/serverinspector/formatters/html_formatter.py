@@ -23,7 +23,7 @@ class HTMLFormatter(BaseFormatter):
         template_path = Path(__file__).parent.parent / "templates"
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_path),
-            autoescape=jinja2.select_autoescape(["html", "xml"]),
+            autoescape=jinja2.select_autoescape(["html", "xml", "html.j2"]),
         )
 
     def format(self, results):

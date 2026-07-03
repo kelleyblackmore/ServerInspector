@@ -111,7 +111,8 @@ class serverinspector:
                 results["tests"].append(test_result)
 
                 # Log result
-                status = "✅ PASS" if test_result["result"] else "❌ FAIL"
+                # ASCII markers: emoji crash legacy Windows consoles (cp1252)
+                status = "PASS" if test_result["result"] else "FAIL"
                 logger.info(f"{status} - {test_result['name']}")
 
             except Exception as e:

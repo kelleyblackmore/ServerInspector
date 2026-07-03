@@ -85,16 +85,31 @@ def process_variables(config, variables):
     Returns:
         dict: The configuration with variables substituted
     """
-    # Convert config to string for easier processing
-    config_str = yaml.dump(config)
+    # Substitute directly on the structure rather than a YAML dump so that
+    # values containing backslashes (e.g. Windows paths) or YAML syntax
+    # cannot corrupt the document or be misread as regex escapes.
+    patterns = {
+        var_name: re.compile(r"\{\{\s*" + re.escape(var_name) + r"\s*\}\}")
+        for var_name in variables
+    }
 
-    # Replace variables in the configuration
-    for var_name, var_value in variables.items():
-        pattern = r"\{\{\s*" + re.escape(var_name) + r"\s*\}\}"
-        config_str = re.sub(pattern, str(var_value), config_str)
+    def substitute(value):
+        if isinstance(value, str):
+            for var_name, pattern in patterns.items():
+                var_value = variables[var_name]
+                # A string that is exactly one variable reference keeps the
+                # variable's original type (int, bool, ...)
+                if pattern.fullmatch(value):
+                    return var_value
+                value = pattern.sub(lambda _m, v=var_value: str(v), value)
+            return value
+        if isinstance(value, dict):
+            return {substitute(k): substitute(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [substitute(item) for item in value]
+        return value
 
-    # Convert back to dictionary
-    return yaml.safe_load(config_str)
+    return substitute(config)
 
 
 def get_default_config_path():

@@ -160,7 +160,7 @@ jobs:
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       version: ${{ steps.version.outputs.version }}
-    
+
     steps:
       - uses: actions/checkout@v7
 
@@ -204,7 +204,7 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/project/serverinspector/
-    
+
     steps:
       - name: Download package artifacts
         uses: actions/download-artifact@v6
@@ -227,7 +227,7 @@ jobs:
     environment:
       name: test-pypi
       url: https://test.pypi.org/project/serverinspector/
-    
+
     steps:
       - name: Download package artifacts
         uses: actions/download-artifact@v6

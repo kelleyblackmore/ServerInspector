@@ -26,7 +26,7 @@ jobs:
       security-events: write
     outputs:
       vuln-count: ${{ steps.count.outputs.total }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

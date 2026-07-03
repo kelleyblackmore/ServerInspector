@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ inputs.os }}
     outputs:
       coverage: ${{ steps.coverage.outputs.percent }}
-    
+
     steps:
       - uses: actions/checkout@v7
 

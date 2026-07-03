@@ -5,11 +5,75 @@ This module provides simple functions to check command execution on a system.
 """
 
 import logging
+import os
 import re
 import shlex
 import subprocess
 
 logger = logging.getLogger("serverinspector")
+
+
+def _evaluate_output(params, result, exit_code, stdout, stderr):
+    """
+    Evaluate command output against the expectations in params.
+
+    Fills in result["message"]/result["success"] and returns the result.
+    """
+    result["details"]["exit_code"] = exit_code
+    result["details"]["stdout"] = stdout
+    result["details"]["stderr"] = stderr
+
+    # Check exit code if specified
+    if "exit_code" in params:
+        expected_exit_code = params["exit_code"]
+        result["details"]["expected_exit_code"] = expected_exit_code
+
+        if exit_code != expected_exit_code:
+            result["message"] = (
+                f"Command exited with code {exit_code}, expected {expected_exit_code}"
+            )
+            return result
+
+    # Check stdout content if specified
+    if "stdout_contains" in params:
+        expected_content = params["stdout_contains"]
+        result["details"]["expected_stdout_contains"] = expected_content
+
+        if expected_content not in stdout:
+            result["message"] = f"Command stdout does not contain: {expected_content}"
+            return result
+
+    # Check stdout pattern if specified
+    if "stdout_pattern" in params:
+        pattern = params["stdout_pattern"]
+        result["details"]["stdout_pattern"] = pattern
+
+        if not re.search(pattern, stdout):
+            result["message"] = f"Command stdout does not match pattern: {pattern}"
+            return result
+
+    # Check stderr content if specified
+    if "stderr_contains" in params:
+        expected_content = params["stderr_contains"]
+        result["details"]["expected_stderr_contains"] = expected_content
+
+        if expected_content not in stderr:
+            result["message"] = f"Command stderr does not contain: {expected_content}"
+            return result
+
+    # Check stderr pattern if specified
+    if "stderr_pattern" in params:
+        pattern = params["stderr_pattern"]
+        result["details"]["stderr_pattern"] = pattern
+
+        if not re.search(pattern, stderr):
+            result["message"] = f"Command stderr does not match pattern: {pattern}"
+            return result
+
+    # All checks passed
+    result["success"] = True
+    result["message"] = f"Command '{result['details']['command']}' passed all checks"
+    return result
 
 
 def check(params):
@@ -45,9 +109,10 @@ def check(params):
 
     # Execute the command
     try:
-        # Run the command using subprocess
-        # Split the command into arguments to avoid shell=True
-        if isinstance(command, str):
+        # Split into arguments on POSIX to avoid shell=True; on Windows,
+        # pass the string through (shlex.split mangles backslashes and
+        # CreateProcess parses the command line natively).
+        if isinstance(command, str) and os.name != "nt":
             command_args = shlex.split(command)
         else:
             command_args = command
@@ -69,65 +134,7 @@ def check(params):
             exit_code = -1
             result["details"]["timeout_expired"] = True
 
-        # Store the results
-        result["details"]["exit_code"] = exit_code
-        result["details"]["stdout"] = stdout
-        result["details"]["stderr"] = stderr
-
-        # Check exit code if specified
-        if "exit_code" in params:
-            expected_exit_code = params["exit_code"]
-            result["details"]["expected_exit_code"] = expected_exit_code
-
-            if exit_code != expected_exit_code:
-                result["message"] = (
-                    f"Command exited with code {exit_code}, expected {expected_exit_code}"
-                )
-                return result
-
-        # Check stdout content if specified
-        if "stdout_contains" in params:
-            expected_content = params["stdout_contains"]
-            result["details"]["expected_stdout_contains"] = expected_content
-
-            if expected_content not in stdout:
-                result["message"] = (
-                    f"Command stdout does not contain: {expected_content}"
-                )
-                return result
-
-        # Check stdout pattern if specified
-        if "stdout_pattern" in params:
-            pattern = params["stdout_pattern"]
-            result["details"]["stdout_pattern"] = pattern
-
-            if not re.search(pattern, stdout):
-                result["message"] = f"Command stdout does not match pattern: {pattern}"
-                return result
-
-        # Check stderr content if specified
-        if "stderr_contains" in params:
-            expected_content = params["stderr_contains"]
-            result["details"]["expected_stderr_contains"] = expected_content
-
-            if expected_content not in stderr:
-                result["message"] = (
-                    f"Command stderr does not contain: {expected_content}"
-                )
-                return result
-
-        # Check stderr pattern if specified
-        if "stderr_pattern" in params:
-            pattern = params["stderr_pattern"]
-            result["details"]["stderr_pattern"] = pattern
-
-            if not re.search(pattern, stderr):
-                result["message"] = f"Command stderr does not match pattern: {pattern}"
-                return result
-
-        # All checks passed
-        result["success"] = True
-        result["message"] = f"Command '{command}' passed all checks"
+        return _evaluate_output(params, result, exit_code, stdout, stderr)
 
     except Exception as e:
         result["message"] = f"Error executing command: {str(e)}"
@@ -136,12 +143,13 @@ def check(params):
     return result
 
 
-def run(_runner, test_config):
+def run(runner, test_config):
     """
-    Run a command test (legacy API for backward compatibility).
+    Run a command test.
 
     Args:
-        _runner: A runner instance (unused, kept for API compatibility)
+        runner: A runner instance; remote runners (SSH) execute the command
+            on the target host, otherwise it runs locally
         test_config (dict): Test configuration
 
     Returns:
@@ -173,8 +181,23 @@ def run(_runner, test_config):
     if "timeout" in test_config:
         params["timeout"] = test_config["timeout"]
 
-    # Run the check with our local subprocess instead of using the runner
-    result = check(params)
+    # Execute on the target host via the runner when it is remote;
+    # previously the runner was ignored and remote command tests silently
+    # ran on the local machine instead of the inspected host.
+    is_remote = runner is not None and runner.__class__.__name__ != "LocalRunner"
+    if is_remote:
+        result = {"success": False, "message": "", "details": {}}
+        result["details"]["command"] = params["command"]
+        try:
+            exit_code, stdout, stderr = runner.run_command_with_status(
+                params["command"]
+            )
+            result = _evaluate_output(params, result, exit_code, stdout, stderr)
+        except Exception as e:
+            result["message"] = f"Error executing command: {str(e)}"
+            result["details"]["error"] = str(e)
+    else:
+        result = check(params)
 
     # Convert the result back to the old format
     old_result = {
