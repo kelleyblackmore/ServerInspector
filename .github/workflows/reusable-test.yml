@@ -30,7 +30,7 @@ jobs:
       coverage: ${{ steps.coverage.outputs.percent }}
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python ${{ inputs.python-version }}
         uses: actions/setup-python@v6
